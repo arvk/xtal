@@ -1,11 +1,24 @@
 import numpy as np
 
-class AtTraj:
-    # Define variables
+class Atom():
+    afrac, bfrac, cfrac = [0.0, 0.0, 0.0]
+    xpos, ypos, zpos = [0.0, 0.0, 0.0]
+    element = ""
+
+    def __init__(self):
+        print 'New atom'
+
+    def dirtocar(self,box):
+        self.xpos = self.afrac*box[0,0] + self.bfrac*box[1,0] + self.cfrac*box[2,0]
+        self.ypos = self.afrac*box[0,1] + self.bfrac*box[1,1] + self.cfrac*box[2,1]
+        self.zpos = self.afrac*box[0,2] + self.bfrac*box[1,2] + self.cfrac*box[2,2]
+
+
+
+class AtTraj():
     box = np.ndarray((3,3))
-    basisa = box[0,:]
-    basisb = box[1,:]
-    basisc = box[2,:]
+    description = ""
+    atomlist = []
 
     def __init__(self):
         print 'Atomic trajectory initialized'
