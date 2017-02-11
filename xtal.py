@@ -37,6 +37,9 @@ class AtTraj():
         self.box[2,0], self.box[2,1], self.box[2,2] = map(float,basisline.split())
         self.box = self.box * mymultiplier
 
+        self.boxvolume = np.inner(self.box[0,:], np.cross(self.box[1,:],self.box[2,:]))
+
+
         basisline = vasp_snapfile.readline()
         atarray = basisline.split()
 
