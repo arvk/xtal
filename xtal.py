@@ -43,3 +43,8 @@ class AtTraj:
                 self.atomlist.append(myatom)
 
         vasp_snapfile.close()
+
+
+    def sort_by_element(self):
+        self.atomlist.sort(key = lambda x: x.element)
+
