@@ -1,24 +1,28 @@
 import numpy as np
 
 class Atom():
-    afrac, bfrac, cfrac = [0.0, 0.0, 0.0]
-    xpos, ypos, zpos = [0.0, 0.0, 0.0]
     element = ""
+    fract = np.ndarray((1,3))
+    cart = np.ndarray((1,3))
 
     def __init__(self):
         print 'New atom'
 
     def dirtocar(self,mat_dir_to_car):
-        [self.xpos, self.ypos, self.zpos] = np.inner(mat_dir_to_car,[self.afrac, self.bfrac, self.cfrac])
+        self.cart = np.array(np.inner(mat_dir_to_car,self.fract))
 
     def cartodir(self,mat_car_to_dir):
-        [self.afrac, self.bfrac, self.cfrac] = np.inner(mat_car_to_dir,[self.xpos, self.ypos, self.zpos])
+        self.fract = np.array(np.inner(mat_car_to_dir,self.cart))
 
 
 class AtTraj():
     box = np.ndarray((3,3))
+    abc = np.ndarray([1,3])
+    ang = np.ndarray([1,3])
     description = ""
     atomlist = []
+    mat_dir_to_car = np.zeros([3,3])
+    mat_car_to_dir = np.zeros([3,3])
 
     def __init__(self):
         print 'Atomic trajectory initialized'
@@ -46,12 +50,9 @@ class AtTraj():
         self.description = vasp_snapfile.readline().strip()
         mymultiplier = float(vasp_snapfile.readline())
 
-        basisline = vasp_snapfile.readline()
-        self.box[0,0], self.box[0,1], self.box[0,2] = map(float,basisline.split())
-        basisline = vasp_snapfile.readline()
-        self.box[1,0], self.box[1,1], self.box[1,2] = map(float,basisline.split())
-        basisline = vasp_snapfile.readline()
-        self.box[2,0], self.box[2,1], self.box[2,2] = map(float,basisline.split())
+        self.box[0,:] = map(float,vasp_snapfile.readline().split())
+        self.box[1,:] = map(float,vasp_snapfile.readline().split())
+        self.box[2,:] = map(float,vasp_snapfile.readline().split())
         self.box = self.box * mymultiplier
 
         self.boxvolume = np.inner(self.box[0,:], np.cross(self.box[1,:],self.box[2,:]))
@@ -64,14 +65,15 @@ class AtTraj():
         basisline = vasp_snapfile.readline()
         atoms_of_type = map(int,basisline.split())
 
-        isindirectcoords = vasp_snapfile.readline()
-        isindirectcoords = isindirectcoords[0].lower() == 'd'
+        isindirectcoords = vasp_snapfile.readline().lower() == 'd'
+#        isindirectcoords = isindirectcoords[0].lower() == 'd'
 
         for index, numbers in enumerate(atoms_of_type):
             for thistype in range (0,numbers):
                 basisline = vasp_snapfile.readline()
                 myatom = Atom()
-                myatom.afrac, myatom.bfrac, myatom.cfrac = map(float,basisline.split())
+#                myatom.afrac, myatom.bfrac, myatom.cfrac = map(float,basisline.split())
+                myatom.fract = np.array(map(float,basisline.split()))
                 myatom.element = atarray[index].upper()
                 self.atomlist.append(myatom)
 
@@ -81,23 +83,24 @@ class AtTraj():
 
 
     def make_dircar_matrices(self):
-        # Convert cell vectors a, b, c into cell lengths and angles
-        self.boxa = np.linalg.norm(self.box[0,:])
-        self.boxb = np.linalg.norm(self.box[1,:])
-        self.boxc = np.linalg.norm(self.box[2,:])
-        self.boxalpha = np.arccos( np.inner(self.box[1,:],self.box[2,:])/(self.boxb*self.boxc) )
-        self.boxbeta = np.arccos( np.inner(self.box[2,:],self.box[0,:])/(self.boxc*self.boxa) )
-        self.boxgamma = np.arccos( np.inner(self.box[0,:],self.box[1,:])/(self.boxa*self.boxb) )
+        # Convert box vectors into cell lengths (a,b,c) and angles (alpha, beta, gamma)
+        a = np.linalg.norm(self.box[0,:])
+        b = np.linalg.norm(self.box[1,:])
+        c = np.linalg.norm(self.box[2,:])
+        alpha = np.arccos( np.inner(self.box[1,:],self.box[2,:])/(b*c) )
+        beta = np.arccos( np.inner(self.box[2,:],self.box[0,:])/(c*a) )
+        gamma = np.arccos( np.inner(self.box[0,:],self.box[1,:])/(a*b) )
 
-        self.mat_dir_to_car = np.zeros([3,3])
-        self.mat_dir_to_car[0,:] = [self.boxa , self.boxb * np.cos(self.boxgamma) , self.boxc * np.cos(self.boxbeta)]
-        self.mat_dir_to_car[1,:] = [0 , self.boxb * np.sin(self.boxgamma) , self.boxc * ((np.cos(self.boxalpha) - (np.cos(self.boxbeta)*np.cos(self.boxgamma)))/ np.sin(self.boxgamma))   ]
-        self.mat_dir_to_car[2,:] = [0 , 0 , self.boxvolume / (self.boxa * self.boxb * np.sin(self.boxgamma))   ]
+        self.abc = np.array([a, b, c])
+        self.ang = np.array([alpha, beta , gamma])
 
-        self.mat_car_to_dir = np.zeros([3,3])
-        self.mat_car_to_dir[0,:] = [1.0/self.boxa ,  0.0 - (np.cos(self.boxgamma)/(self.boxa * np.sin(self.boxgamma))) , self.boxb * self.boxc * ((np.cos(self.boxalpha)*np.cos(self.boxgamma)) - np.cos(self.boxbeta))/(self.boxvolume * np.sin(self.boxgamma))       ]
-        self.mat_car_to_dir[1,:] = [0.0 ,  1.0 / (self.boxb * np.sin(self.boxgamma)) , self.boxa * self.boxc * ((np.cos(self.boxbeta)*np.cos(self.boxgamma)) - np.cos(self.boxalpha))/(self.boxvolume * np.sin(self.boxgamma))       ]
-        self.mat_car_to_dir[2,:] = [0.0 ,  0.0 , self.boxa * self.boxb * np.sin(self.boxgamma) / self.boxvolume]
+        self.mat_dir_to_car[0,:] = [a , b * np.cos(gamma) , c * np.cos(beta)]
+        self.mat_dir_to_car[1,:] = [0 , b * np.sin(gamma) , c * ((np.cos(alpha) - (np.cos(beta)*np.cos(gamma)))/ np.sin(gamma))   ]
+        self.mat_dir_to_car[2,:] = [0 , 0 , self.boxvolume / (a * b * np.sin(gamma))   ]
+
+        self.mat_car_to_dir[0,:] = [1.0/a ,  0.0 - (np.cos(gamma)/(a * np.sin(gamma))) , b * c * ((np.cos(alpha)*np.cos(gamma)) - np.cos(beta))/(self.boxvolume * np.sin(gamma))       ]
+        self.mat_car_to_dir[1,:] = [0.0 ,  1.0 / (b * np.sin(gamma)) , a * c * ((np.cos(beta)*np.cos(gamma)) - np.cos(alpha))/(self.boxvolume * np.sin(gamma))       ]
+        self.mat_car_to_dir[2,:] = [0.0 ,  0.0 , a * b * np.sin(gamma) / self.boxvolume]
 
 
     def sort_by_element(self):
@@ -111,7 +114,6 @@ class AtTraj():
         np.savetxt(vasp_snapfile,self.box,fmt='%19.16f', delimiter = "   ", newline = "\n")
 
         # Sort atoms by element before counting number of atoms by element
-        #self.atomlist.sort_by_element()
         self.atomlist.sort(key = lambda x: x.element)
         uniquesdict = {}
         for singleatom in self.atomlist:
@@ -134,13 +136,13 @@ class AtTraj():
             for uniqueelement in uniqueslist1:
                 subsetofatomlist = (atoms for atoms in self.atomlist if atoms.element == uniqueelement)
                 for singleatom in subsetofatomlist:
-                    vasp_snapfile.write('{0}  {1}  {2}\n'.format(singleatom.afrac,singleatom.bfrac,singleatom.cfrac))
+                    np.savetxt(vasp_snapfile,singleatom.fract[None],fmt='%19.16f', delimiter = "   ", newline = "\n ") # np.savetxt has problems with 1D array writing
         else:
             vasp_snapfile.write('Cartesian\n')
             for uniqueelement in uniqueslist1:
                 subsetofatomlist = (atoms for atoms in self.atomlist if atoms.element == uniqueelement.upper())
                 for singleatom in subsetofatomlist:
-                    vasp_snapfile.write('{0}  {1}  {2}\n'.format(singleatom.xpos,singleatom.ypos,singleatom.zpos))
+                    np.savetxt(vasp_snapfile,singleatom.cart[None],fmt='%19.16f', delimiter = "   ", newline = "\n ") # np.savetxt has problems with 1D array writing
 
 
 
