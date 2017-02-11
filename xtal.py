@@ -50,6 +50,7 @@ class AtTraj():
 
         self.boxvolume = np.inner(self.box[0,:], np.cross(self.box[1,:],self.box[2,:]))
 
+        self.make_dircar_matrices() # Uniform representation of box dimensions from POSCAR file
 
         basisline = vasp_snapfile.readline()
         atarray = basisline.split()
@@ -66,8 +67,9 @@ class AtTraj():
                 myatom = Atom()
                 myatom.afrac, myatom.bfrac, myatom.cfrac = map(float,basisline.split())
                 myatom.element = atarray[index].upper()
-                myatom.dirtocar(self.box)
                 self.atomlist.append(myatom)
+
+        self.dirtocar() # Populate the cartesian position values from the fractional coordinates for each atom
 
         vasp_snapfile.close()
 
