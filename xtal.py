@@ -11,7 +11,6 @@ class Atom():
     def dirtocar(self,mat_dir_to_car):
         [self.xpos, self.ypos, self.zpos] = np.inner(mat_dir_to_car,[self.afrac, self.bfrac, self.cfrac])
 
-
     def cartodir(self,mat_car_to_dir):
         [self.afrac, self.bfrac, self.cfrac] = np.inner(mat_car_to_dir,[self.xpos, self.ypos, self.zpos])
 
@@ -32,6 +31,13 @@ class AtTraj():
     def cartodir(self):
         for atom in self.atomlist:
             atom.cartodir(self.mat_car_to_dir)
+
+    def vectortocar(self,inputvec):
+        return np.inner(self.mat_dir_to_car,inputvec)
+
+    def vectortodir(self,inputvec):
+        return np.inner(self.mat_car_to_dir,inputvec)
+
 
 
     def read_snapshot_vasp(self,filename):
