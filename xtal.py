@@ -8,11 +8,12 @@ class Atom():
     def __init__(self):
         print 'New atom'
 
-    def dirtocar(self,box):
-        self.xpos = self.afrac*box[0,0] + self.bfrac*box[1,0] + self.cfrac*box[2,0]
-        self.ypos = self.afrac*box[0,1] + self.bfrac*box[1,1] + self.cfrac*box[2,1]
-        self.zpos = self.afrac*box[0,2] + self.bfrac*box[1,2] + self.cfrac*box[2,2]
+    def dirtocar(self,mat_dir_to_car):
+        [self.xpos, self.ypos, self.zpos] = np.inner(mat_dir_to_car,[self.afrac, self.bfrac, self.cfrac])
 
+
+    def cartodir(self,mat_car_to_dir):
+        [self.afrac, self.bfrac, self.cfrac] = np.inner(mat_car_to_dir,[self.xpos, self.ypos, self.zpos])
 
 
 class AtTraj():
