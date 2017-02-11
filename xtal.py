@@ -80,17 +80,17 @@ class AtTraj():
         uniquesdict1 = {}
         for uniqueelement in uniqueslist:
             uniquesdict[uniqueelement] = str(len([p for p in self.atomlist if p.element == uniqueelement]))
-            uniquesdict1[uniqueelement] = uniqueelement.capitalize()
+            uniquesdict1[uniqueelement] = uniqueelement
         uniqueslist = uniquesdict.values()
         uniqueslist1 = uniquesdict1.values()
 
-        vasp_snapfile.write("  ".join(uniqueslist1)+'\n')
+        vasp_snapfile.write("  ".join(uniqueslist1).title()+'\n')
         vasp_snapfile.write("  ".join(uniqueslist)+'\n')
 
         if write_in_direct:
             vasp_snapfile.write('Direct\n')
             for uniqueelement in uniqueslist1:
-                subsetofatomlist = (atoms for atoms in self.atomlist if atoms.element == uniqueelement.upper())
+                subsetofatomlist = (atoms for atoms in self.atomlist if atoms.element == uniqueelement)
                 for singleatom in subsetofatomlist:
                     vasp_snapfile.write('{0}  {1}  {2}\n'.format(singleatom.afrac,singleatom.bfrac,singleatom.cfrac))
         else:
