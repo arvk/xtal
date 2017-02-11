@@ -24,6 +24,16 @@ class AtTraj():
     def __init__(self):
         print 'Atomic trajectory initialized'
 
+
+    def dirtocar(self):
+        for atom in self.atomlist:
+            atom.dirtocar(self.mat_dir_to_car)
+
+    def cartodir(self):
+        for atom in self.atomlist:
+            atom.cartodir(self.mat_car_to_dir)
+
+
     def read_snapshot_vasp(self,filename):
         vasp_snapfile = open(filename,"r")
 
