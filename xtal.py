@@ -65,19 +65,26 @@ class AtTraj():
         basisline = vasp_snapfile.readline()
         atoms_of_type = map(int,basisline.split())
 
-        isindirectcoords = vasp_snapfile.readline().lower() == 'd'
-#        isindirectcoords = isindirectcoords[0].lower() == 'd'
+        isindirectcoords = vasp_snapfile.readline().lower().strip()[0]=='d'  # Check if the coordinates are in Direct or Cartesian
 
-        for index, numbers in enumerate(atoms_of_type):
-            for thistype in range (0,numbers):
-                basisline = vasp_snapfile.readline()
-                myatom = Atom()
-#                myatom.afrac, myatom.bfrac, myatom.cfrac = map(float,basisline.split())
-                myatom.fract = np.array(map(float,basisline.split()))
-                myatom.element = atarray[index].upper()
-                self.atomlist.append(myatom)
-
-        self.dirtocar() # Populate the cartesian position values from the fractional coordinates for each atom
+        if isindirectcoords:
+            for index, numbers in enumerate(atoms_of_type):
+                for thistype in range (0,numbers):
+                    basisline = vasp_snapfile.readline()
+                    myatom = Atom()
+                    myatom.fract = np.array(map(float,basisline.split()))
+                    myatom.element = atarray[index].upper()
+                    self.atomlist.append(myatom)
+            self.dirtocar() # Populate the cartesian position values from the fractional coordinates for each atom
+        else:
+            for index, numbers in enumerate(atoms_of_type):
+                for thistype in range (0,numbers):
+                    basisline = vasp_snapfile.readline()
+                    myatom = Atom()
+                    myatom.cart = np.array(map(float,basisline.split()))
+                    myatom.element = atarray[index].upper()
+                    self.atomlist.append(myatom)
+            self.cartodir() # Populate fractional coordinates from the cartesian position of each atom
 
         vasp_snapfile.close()
 
