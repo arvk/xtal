@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 
 class Atom():
     element = ""
@@ -47,6 +48,34 @@ class AtTraj():
     def move(self,vector):
         for atom in self.atomlist:
             atom.move(vector)
+
+    def make_periodic(self,num_of_images):
+        # Duplicate self.atomlist -- Dont want to (re)duplicate all the new atoms
+        original_atomlist = list(self.atomlist)
+        # Clear the original list
+        self.atomlist = []
+        # Loop over z,y and x respectively
+        for zimage in range(0,num_of_images[2]):
+            for yimage in range(0,num_of_images[1]):
+                for ximage in range(0,num_of_images[0]):
+                    for singleatom in original_atomlist:
+                        newatom = copy.copy(singleatom)
+                        newatom.fract = newatom.fract + np.array([ximage,yimage,zimage])
+                        newatom.fract = np.divide(newatom.fract,num_of_images)
+                        self.atomlist.append(newatom)
+
+        # Adjust the box sizes and recompile transformation matrices
+        self.box[0,:] = self.box[0,:] * num_of_images[0]
+        self.box[1,:] = self.box[1,:] * num_of_images[1]
+        self.box[2,:] = self.box[2,:] * num_of_images[2]
+        self.make_dircar_matrices()
+        self.dirtocar()
+
+        # Cleanup
+        del original_atomlist[:]
+
+
+
 
 
     def read_snapshot_vasp(self,filename):
