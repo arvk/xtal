@@ -14,6 +14,8 @@ class Atom():
     def cartodir(self,mat_car_to_dir):
         self.fract = np.array(np.inner(mat_car_to_dir,self.cart))
 
+    def move(self,vector):
+        self.cart = self.cart + vector
 
 class AtTraj():
     box = np.ndarray((3,3))
@@ -42,6 +44,9 @@ class AtTraj():
     def vectortodir(self,inputvec):
         return np.inner(self.mat_car_to_dir,inputvec)
 
+    def move(self,vector):
+        for atom in self.atomlist:
+            atom.move(vector)
 
 
     def read_snapshot_vasp(self,filename):
