@@ -60,8 +60,6 @@ class AtTraj():
         self.box[2,:] = map(float,vasp_snapfile.readline().split())
         self.box = self.box * mymultiplier
 
-        self.boxvolume = np.inner(self.box[0,:], np.cross(self.box[1,:],self.box[2,:]))
-
         self.make_dircar_matrices() # Uniform representation of box dimensions from POSCAR file
 
         basisline = vasp_snapfile.readline()
@@ -105,6 +103,7 @@ class AtTraj():
 
         self.abc = np.array([a, b, c])
         self.ang = np.array([alpha, beta , gamma])
+        self.boxvolume = np.inner(self.box[0,:], np.cross(self.box[1,:],self.box[2,:]))
 
         self.mat_dir_to_car[0,:] = [a , b * np.cos(gamma) , c * np.cos(beta)]
         self.mat_dir_to_car[1,:] = [0 , b * np.sin(gamma) , c * ((np.cos(alpha) - (np.cos(beta)*np.cos(gamma)))/ np.sin(gamma))   ]
