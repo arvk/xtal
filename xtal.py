@@ -6,9 +6,6 @@ class Atom():
     fract = np.ndarray((1,3))
     cart = np.ndarray((1,3))
 
-    def __init__(self):
-        print 'New atom'
-
     def dirtocar(self,mat_dir_to_car):
         self.cart = np.array(np.inner(mat_dir_to_car,self.fract))
 
