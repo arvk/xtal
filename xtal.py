@@ -212,7 +212,7 @@ class AtTraj():
         else:
             vasp_snapfile.write('Cartesian\n')
             for uniqueelement in uniqueslist1:
-                subsetofatomlist = (atoms for atoms in self.atomlist if atoms.element == uniqueelement.upper())
+                subsetofatomlist = (atoms for atoms in self.atomlist if atoms.element == uniqueelement)
                 for singleatom in subsetofatomlist:
                     np.savetxt(vasp_snapfile,singleatom.cart[None],fmt='%19.16f', delimiter = "   ", newline = "\n ") # np.savetxt has problems with 1D array writing
 
