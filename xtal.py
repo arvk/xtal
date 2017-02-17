@@ -15,6 +15,10 @@ class Atom():
     def move(self,vector):
         self.cart = self.cart + vector
 
+    def remapID(self,oldID,newID):
+        if (self.element == oldID):
+            self.element = newID
+
 class AtTraj():
     box = np.ndarray((3,3))
     abc = np.ndarray([1,3])
@@ -35,6 +39,10 @@ class AtTraj():
     def cartodir(self):
         for atom in self.atomlist:
             atom.cartodir(self.mat_car_to_dir)
+
+    def remapID(self,oldID,newID):
+        for atom in self.atomlist:
+            atom.remapID(oldID,newID)
 
     def vectortocar(self,inputvec):
         return np.inner(self.mat_dir_to_car,inputvec)
