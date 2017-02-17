@@ -73,6 +73,41 @@ class AtTraj():
 
 
 
+    def read_snapshot_lammps(self,filename):
+        lammps_snapfile = open(filename,"r")
+        lammps_snapfile.readline() # Comment line for Timestep
+        self.stepcount = int(lammps_snapfile.readline().strip())
+
+        lammps_snapfile.readline() # Comment line for Atom Count
+        atomcount = int(lammps_snapfile.readline().strip())
+
+        lammps_snapfile.readline() # Comment line for box bounds
+        xlo_bound,xhi_bound,xy = map(float,lammps_snapfile.readline().split())
+        ylo_bound,yhi_bound,xz = map(float,lammps_snapfile.readline().split())
+        zlo_bound,zhi_bound,yz = map(float,lammps_snapfile.readline().split())
+
+        xlo = xlo_bound - min(0.0,xy,xz,xy+xz)
+        xhi = xhi_bound - max(0.0,xy,xz,xy+xz)
+        ylo = ylo_bound - min(0.0,yz)
+        yhi = yhi_bound - max(0.0,yz)
+        zlo = zlo_bound
+        zhi = zhi_bound
+
+        self.box[0,:] = [xhi-xlo, 0.0, 0.0]
+        self.box[1,:] = [xy, yhi-ylo, 0.0]
+        self.box[2,:] = [xz, yz, zhi-zlo]
+
+        self.make_dircar_matrices() # Uniform representation of box dimensions
+
+        lammps_snapfile.readline() # Comment line for Atom positions
+        for thisatomcount in range(0,atomcount):
+            basisline = lammps_snapfile.readline()
+            myatom = Atom()
+            myatom.element, myatom.cart = [basisline.split()[0],  np.array(map(float,basisline.split()[1:4]))]
+            self.atomlist.append(myatom)
+        self.cartodir()
+
+        lammps_snapfile.close()
 
 
     def read_snapshot_vasp(self,filename):
