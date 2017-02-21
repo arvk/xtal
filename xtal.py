@@ -54,6 +54,31 @@ class AtTraj():
         for atom in self.atomlist:
             atom.move(vector)
 
+    def inbox(self):
+        for atom in self.atomlist:
+            atom.fract = atom.fract - np.floor(atom.fract)
+            atom.dirtocar(self.mat_dir_to_car)
+
+
+    def pbc_distance(self,atom1,atom2):
+        atom1.fract = atom1.fract - np.floor(atom2.fract)
+        atom2.fract = atom2.fract - np.floor(atom2.fract)
+        diff0 = atom2.fract - atom1.fract
+        diff1 = diff0 + 1
+        diff2 = diff0 - 1
+        diff0 = np.append([diff0],[diff1],axis=0)
+        diff0 = np.append(diff0,[diff2],axis=0)
+        diff = []
+        diff.append(sorted(diff0[:,0],key = abs)[0])
+        diff.append(sorted(diff0[:,1],key = abs)[0])
+        diff.append(sorted(diff0[:,2],key = abs)[0])
+        mindist_fract_vec = np.array(diff)
+        mindist_cart_vec = np.dot(np.matrix.transpose(self.box),mindist_fract_vec)
+        mindist = np.linalg.norm(mindist_cart_vec)
+        return mindist
+
+
+
     def make_periodic(self,num_of_images):
         # Duplicate self.atomlist -- Dont want to (re)duplicate all the new atoms
         original_atomlist = list(self.atomlist)
