@@ -4,8 +4,7 @@
 import numpy as np
 from scipy.interpolate import griddata
 
-
-def make_ori_MO(m_in,n_in):
+def make_ori_MO(m_in,n_in,scale_in):
 
 # Origami parameters
     ori_size = 100.0
@@ -13,8 +12,8 @@ def make_ori_MO(m_in,n_in):
     n = n_in*2
     Tx = 2.0*ori_size/(m)
     Ty = 2.0*ori_size/(n)
-    hx = 1.0
-    hy = 1.0
+    hx = Tx*scale_in
+    hy = Ty*scale_in
 
     Vx = np.zeros([m,n])
     Vy = np.zeros([m,n])
