@@ -3,6 +3,7 @@
 
 import numpy as np
 from scipy.interpolate import griddata
+import math
 
 def make_ori_MO(m_in,n_in,scale_in):
 
@@ -68,22 +69,23 @@ def make_ori_MO(m_in,n_in,scale_in):
 
     # Convert to tuples
 
-    #initpoints = np.array([])
-    #initpoints = np.append(Vtx.reshape(m*n,1),Vty.reshape(m*n,1),1)
+    x_extent = (max(Vtx[:,0]) - min(Vtx[:,0]))*(m/(m-1.0))
+    y_extent = (max(Vty[0,:]) - min(Vty[0,:]))*(n/(n-1.0))
 
     crease_x = Vtx.reshape(m*n,1)
     crease_y = Vty.reshape(m*n,1)
 
+
     initpoints_i_j = np.array([])
     initpoints_i_j = np.append(crease_x,crease_y,1)  # i,j
-    initpoints_ip1_j = np.append(crease_x+ori_size,crease_y,1)  # i+1,j
-    initpoints_im1_j = np.append(crease_x-ori_size,crease_y,1)  # i-1,j
-    initpoints_i_jp1 = np.append(crease_x,crease_y+ori_size,1)  # i,j+1
-    initpoints_i_jm1 = np.append(crease_x,crease_y-ori_size,1)  # i,j-1
-    initpoints_ip1_jp1 = np.append(crease_x+ori_size,crease_y+ori_size,1)  # i+1,j+1
-    initpoints_ip1_jm1 = np.append(crease_x+ori_size,crease_y-ori_size,1)  # i+1,j-1
-    initpoints_im1_jp1 = np.append(crease_x-ori_size,crease_y+ori_size,1)  # i-1,j+1
-    initpoints_im1_jm1 = np.append(crease_x-ori_size,crease_y-ori_size,1)  # i-1,j-1
+    initpoints_ip1_j = np.append(crease_x+x_extent,crease_y,1)  # i+1,j
+    initpoints_im1_j = np.append(crease_x-x_extent,crease_y,1)  # i-1,j
+    initpoints_i_jp1 = np.append(crease_x,crease_y+y_extent,1)  # i,j+1
+    initpoints_i_jm1 = np.append(crease_x,crease_y-y_extent,1)  # i,j-1
+    initpoints_ip1_jp1 = np.append(crease_x+x_extent,crease_y+y_extent,1)  # i+1,j+1
+    initpoints_ip1_jm1 = np.append(crease_x+x_extent,crease_y-y_extent,1)  # i+1,j-1
+    initpoints_im1_jp1 = np.append(crease_x-x_extent,crease_y+y_extent,1)  # i-1,j+1
+    initpoints_im1_jm1 = np.append(crease_x-x_extent,crease_y-y_extent,1)  # i-1,j-1
 
     initpoints = initpoints_i_j
     initpoints = np.append(initpoints,initpoints_ip1_j,0)
@@ -96,36 +98,37 @@ def make_ori_MO(m_in,n_in,scale_in):
     initpoints = np.append(initpoints,initpoints_im1_jm1,0)
 
     ## Normalize to [0,1]
-    initpoints = initpoints/ori_size
-
-
+    initpoints[:,0] = initpoints[:,0]/x_extent
+    initpoints[:,1] = initpoints[:,1]/y_extent
 
 
     # Convert Origami vertices to tuples
 
     values_ij = Vx.reshape(m*n,1)
+    x_extent = (max(Vx[:,0]) - min(Vx[:,0]))*(m/(m-1.0))
     values = values_ij
-    values = np.append(values,values_ij+ori_size,0)
-    values = np.append(values,values_ij-ori_size,0)
+    values = np.append(values,values_ij+x_extent,0)
+    values = np.append(values,values_ij-x_extent,0)
     values = np.append(values,values_ij,0)
     values = np.append(values,values_ij,0)
-    values = np.append(values,values_ij+ori_size,0)
-    values = np.append(values,values_ij+ori_size,0)
-    values = np.append(values,values_ij-ori_size,0)
-    values = np.append(values,values_ij-ori_size,0)
-    valuesx = values/ori_size
+    values = np.append(values,values_ij+x_extent,0)
+    values = np.append(values,values_ij+x_extent,0)
+    values = np.append(values,values_ij-x_extent,0)
+    values = np.append(values,values_ij-x_extent,0)
+    valuesx = values/x_extent
 
     values_ij = Vy.reshape(m*n,1)
+    y_extent = (max(Vy[0,:]) - min(Vy[0,:]))*(n/(n-1.0))
     values = values_ij
     values = np.append(values,values_ij,0)
     values = np.append(values,values_ij,0)
-    values = np.append(values,values_ij+ori_size,0)
-    values = np.append(values,values_ij-ori_size,0)
-    values = np.append(values,values_ij+ori_size,0)
-    values = np.append(values,values_ij-ori_size,0)
-    values = np.append(values,values_ij+ori_size,0)
-    values = np.append(values,values_ij-ori_size,0)
-    valuesy = values/ori_size
+    values = np.append(values,values_ij+y_extent,0)
+    values = np.append(values,values_ij-y_extent,0)
+    values = np.append(values,values_ij+y_extent,0)
+    values = np.append(values,values_ij-y_extent,0)
+    values = np.append(values,values_ij+y_extent,0)
+    values = np.append(values,values_ij-y_extent,0)
+    valuesy = values/y_extent
 
     values_ij = Vz.reshape(m*n,1)
     values = values_ij
@@ -137,7 +140,7 @@ def make_ori_MO(m_in,n_in,scale_in):
     values = np.append(values,values_ij,0)
     values = np.append(values,values_ij,0)
     values = np.append(values,values_ij,0)
-    valuesz = values/ori_size
+    valuesz = values/math.sqrt(x_extent*y_extent)
 
 
     folded = valuesx
