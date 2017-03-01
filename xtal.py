@@ -277,3 +277,29 @@ class AtTraj():
 
 
         vasp_snapfile.close()
+
+
+
+
+
+def isSierpinskiCarpetFilled(level,coords):
+    # Calculate if the given fractional coordinates correspond to a filed pixel in the Sierpinksi carpet fractal of a given level
+
+    # Multiply the fractional coordinate with 3^n (for n = level..1) and check to see if it leaves a reminder of 1 upon division by 3 (i.e. it is the middle cell at any level)
+
+    multiplier = 3**level
+
+    x = int(coords[0]*multiplier)
+    y = int(coords[1]*multiplier)
+
+    while True:
+        if (x==0 and y==0):
+            break
+
+        if (x%3==1 and y%3==1):
+            return False
+
+        x = int(x/3)
+        y = int(y/3)
+
+    return True
