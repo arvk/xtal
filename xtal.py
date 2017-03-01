@@ -60,6 +60,31 @@ class AtTraj():
             atom.dirtocar(self.mat_dir_to_car)
 
 
+    def remove_overlap(self,cutoff):
+        # Remove one of a pair of atoms that are within <cutoff> distance of each other
+        # <cutoff> is given in Angstroms
+
+        # Loop through the atomlist to identify atom pairs within a cutoff distance of each other and add one atom of the pair to a blacklist
+        # Construct a whitelist of atoms in self.atomlist but not in the blacklist
+        # Set self.atomlist equal to the whitelist
+
+        num_of_initial_atoms = len(self.atomlist)
+        removed_atoms = []
+
+        for atom1 in self.atomlist:
+            for atom2 in self.atomlist:
+                if (atom1 not in removed_atoms) and (atom2 not in removed_atoms) and (atom1 != atom2) and (self.pbc_distance(atom1,atom2) < cutoff):
+                    removed_atoms.append(atom2)
+
+        num_of_removed_atoms = len(removed_atoms)
+        remaining_atoms = [atom for atom in self.atomlist if atom not in removed_atoms]
+        num_of_remaining_atoms = len(remaining_atoms)
+
+        self.atomlist = remaining_atoms
+        print num_of_removed_atoms,'atoms removed. Atomlist size reduced from',num_of_initial_atoms,'to',num_of_remaining_atoms
+
+
+
     def pbc_distance(self,atom1,atom2):
         atom1.fract = atom1.fract - np.floor(atom2.fract)
         atom2.fract = atom2.fract - np.floor(atom2.fract)
