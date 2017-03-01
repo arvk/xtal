@@ -84,6 +84,56 @@ class AtTraj():
         print num_of_removed_atoms,'atoms removed. Atomlist size reduced from',num_of_initial_atoms,'to',num_of_remaining_atoms
 
 
+    def faster_remove_overlap(self,cutoff):
+        # Remove one of a pair of atoms that are within <cutoff> distance of each other
+        # <cutoff> is given in Angstroms
+
+        # Atomlist is sorted according to x- y- and z- positions
+        # Loop through the atomlist to find out if atom i and i+1 are within cutoff. If yes, remove atom i from the atomlist
+        # Loop until you don't find any neighbors within the cutoff
+
+        num_of_initial_atoms = len(self.atomlist)
+        removed_atoms = []
+        num_of_removed_atoms = 0
+
+        found_duplicate_atoms = True
+
+        while found_duplicate_atoms:
+            found_duplicate_atoms = False
+
+            self.atomlist.sort(key = lambda x: int(x.cart[0]))
+            self.atomlist.sort(key = lambda x: int(x.cart[1]))
+            self.atomlist.sort(key = lambda x: int(x.cart[2]))
+            for index, atom in enumerate(self.atomlist):
+                if index < len(self.atomlist)-1: # We don't want the last element, as we have to compare index index+1
+                    if(self.pbc_distance(self.atomlist[index],self.atomlist[index+1]) < cutoff):
+                        del self.atomlist[index]
+                        num_of_removed_atoms += 1
+                        found_duplicate_atom = True
+
+            self.atomlist.sort(key = lambda x: int(x.cart[1]))
+            self.atomlist.sort(key = lambda x: int(x.cart[2]))
+            self.atomlist.sort(key = lambda x: int(x.cart[0]))
+            for index, atom in enumerate(self.atomlist):
+                if index < len(self.atomlist)-1: # We don't want the last element, as we have to compare index index+1
+                    if(self.pbc_distance(self.atomlist[index],self.atomlist[index+1]) < cutoff):
+                        del self.atomlist[index]
+                        num_of_removed_atoms += 1
+                        found_duplicate_atom = True
+
+            self.atomlist.sort(key = lambda x: int(x.cart[2]))
+            self.atomlist.sort(key = lambda x: int(x.cart[0]))
+            self.atomlist.sort(key = lambda x: int(x.cart[1]))
+            for index, atom in enumerate(self.atomlist):
+                if index < len(self.atomlist)-1: # We don't want the last element, as we have to compare index index+1
+                    if(self.pbc_distance(self.atomlist[index],self.atomlist[index+1]) < cutoff):
+                        del self.atomlist[index]
+                        num_of_removed_atoms += 1
+                        found_duplicate_atom = True
+
+        print num_of_removed_atoms,'atoms removed. Atomlist size reduced from',num_of_initial_atoms,'to',len(self.atomlist)
+
+
 
     def pbc_distance(self,atom1,atom2):
         atom1.fract = atom1.fract - np.floor(atom2.fract)
