@@ -215,13 +215,10 @@ class AtTraj(object):
         alpha = self.ang[0]
         beta = self.ang[1]
         gamma = self.ang[2]
-        Vunit = np.sqrt(1.0 + (2.0*np.cos(alpha)*np.cos(beta)*np.cos(gamma)) - (np.cos(alpha)*np.cos(alpha)) - (np.cos(beta)*np.cos(beta)) - (np.cos(gamma)*np.cos(gamma)) )
-        cgr = ((np.cos(alpha)*np.cos(beta)) - np.cos(gamma))/(np.sin(alpha)*np.sin(beta))
-        sgr = np.sqrt(1-(cgr*cgr))
         box = np.ndarray([3,3])
-        box[0,:] = [a*Vunit/np.sin(alpha),a*Vunit/np.sin(alpha) * (-cgr) / sgr , a * np.cos(beta)]
-        box[1,:] = [0.0, b*np.sin(alpha), b*np.cos(alpha)]
-        box[2,:] = [0.0, 0.0, c]
+        box[0,:] = [a,0.0,0.0]
+        box[1,:] = [b*np.cos(gamma),b*np.sin(gamma),0.0]
+        box[2,:] = [c*np.cos(beta), c*np.cos(alpha)*np.sin(gamma) ,  c * np.sqrt( 1 - (np.cos(beta)*np.cos(beta)) - (np.cos(alpha)*np.sin(gamma)*np.cos(alpha)*np.sin(gamma)))]
         self.box = box
 
 
