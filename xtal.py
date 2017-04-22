@@ -1,5 +1,6 @@
 import numpy as np
 import copy
+import progressbar
 
 class AtTraj(object):
 
@@ -51,7 +52,8 @@ class AtTraj(object):
                 atom.dirtocar()
 
     def make_periodic(self,num_of_images):
-        for snapshot in self.snaplist:
+        newprogressbar = progressbar.ProgressBar()
+        for snapshot in newprogressbar(self.snaplist):
             snapshot.make_periodic(num_of_images)
 
         # Adjust the box sizes and recompile transformation matrices
