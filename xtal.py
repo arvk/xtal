@@ -146,15 +146,16 @@ class AtTraj(object):
 
 
     def read_trajectory_PWP(self,directory):
+        bohr_to_angstrom = 0.52917724900001
         boxfilename = directory+"/qm_box.d"
         pwp_boxfile = open(boxfilename,"r")
         # Remove first two lines
         pwp_boxfile.readline()
         pwp_boxfile.readline()
         currline = map(float,pwp_boxfile.readline().split())
-        a = currline[1]
-        b = currline[2]
-        c = currline[3]
+        a = currline[1]*bohr_to_angstrom
+        b = currline[2]*bohr_to_angstrom
+        c = currline[3]*bohr_to_angstrom
         alpha = currline[4]*np.pi/180.0
         beta = currline[5]*np.pi/180.0
         gamma = currline[6]*np.pi/180.0
