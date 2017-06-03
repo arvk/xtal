@@ -51,6 +51,11 @@ class AtTraj(object):
                 atom.fract = atom.fract - np.floor(atom.fract)
                 atom.dirtocar()
 
+    def rotate(self,center,angle):
+        for snapshot in self.snaplist:
+            snapshot.rotate(center,angle)
+
+
     def make_periodic(self,num_of_images):
         newprogressbar = progressbar.ProgressBar()
         for snapshot in newprogressbar(self.snaplist):
@@ -286,6 +291,10 @@ class Snapshot(AtTraj):
         for atom in self.atomlist:
             atom.cartodir()
 
+    def rotate(self,center,angle):
+        for atom in self.atomlist:
+            atom.rotate(center,angle)
+
 
 
     def make_periodic(self,num_of_images):
@@ -446,6 +455,16 @@ class Atom(Snapshot):
     def remapID(self,oldID,newID):
         if (self.element == oldID):
             self.element = newID
+
+    def rotate(self,center,angle):
+        initpos = self.cart[[0,1]]
+        recenter = initpos - center
+        rotmat = np.array([[np.cos(angle),0.0-np.sin(angle)],[np.sin(angle),np.cos(angle)]])
+        rotated = rotmat.dot(recenter)
+        finalpos = rotated + center
+        self.cart[0] = finalpos[0]
+        self.cart[1] = finalpos[1]
+
 
 
 #--------------------------------------------------
