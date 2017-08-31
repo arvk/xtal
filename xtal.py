@@ -268,6 +268,35 @@ class AtTraj(object):
 
 
 
+    def identical_sort(self,refsnap,opsnap):
+        for refindex, refatom in enumerate(refsnap.atomlist):
+            mindist = np.linalg.norm(self.abc)
+            for opindex in range(refindex, len(opsnap.atomlist)):
+                currdist = opsnap.pbc_distance(opsnap.atomlist[opindex],refatom)
+
+                if (currdist <= mindist):
+                    swapindex = opindex
+                    mindist = currdist
+
+            opsnap.atomlist[swapindex], opsnap.atomlist[refindex] = opsnap.atomlist[refindex], opsnap.atomlist[swapindex]
+
+
+
+    def nonp_identical_sort(self,refsnap,opsnap):
+        # Operates only on the fractional coordinates in a non-periodic unit cell
+        for refindex, refatom in enumerate(refsnap.atomlist):
+            mindist = 1.0
+            for opindex in range(refindex, len(opsnap.atomlist)):
+                currdist = np.linalg.norm(opsnap.atomlist[opindex].fract - refatom.fract)
+
+                if (currdist <= mindist):
+                    swapindex = opindex
+                    mindist = currdist
+
+            opsnap.atomlist[swapindex], opsnap.atomlist[refindex] = opsnap.atomlist[refindex], opsnap.atomlist[swapindex]
+
+
+
 
 #--------------------------------------------------
 
