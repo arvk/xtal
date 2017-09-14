@@ -161,9 +161,9 @@ class AtTraj(object):
         pwp_boxfile.readline()
         pwp_boxfile.readline()
         currline = map(float, pwp_boxfile.readline().split())
-        a = currline[1]*bohr_to_angstrom
-        b = currline[2]*bohr_to_angstrom
-        c = currline[3]*bohr_to_angstrom
+        a = currline[1]*bohr_to_angstrom # pylint: disable=invalid-name
+        b = currline[2]*bohr_to_angstrom # pylint: disable=invalid-name
+        c = currline[3]*bohr_to_angstrom # pylint: disable=invalid-name
         alpha = currline[4]*np.pi/180.0
         beta = currline[5]*np.pi/180.0
         gamma = currline[6]*np.pi/180.0
@@ -218,9 +218,9 @@ class AtTraj(object):
 
 
     def abc_to_box(self):
-        a = self.abc[0]
-        b = self.abc[1]
-        c = self.abc[2]
+        a = self.abc[0] # pylint: disable=invalid-name
+        b = self.abc[1] # pylint: disable=invalid-name
+        c = self.abc[2] # pylint: disable=invalid-name
         alpha = self.ang[0]
         beta = self.ang[1]
         gamma = self.ang[2]
@@ -242,9 +242,9 @@ class AtTraj(object):
 
     def box_to_abc(self):
         # Convert box vectors into cell lengths (a, b, c) and angles (alpha, beta, gamma)
-        a = np.linalg.norm(self.box[0, :])
-        b = np.linalg.norm(self.box[1, :])
-        c = np.linalg.norm(self.box[2, :])
+        a = np.linalg.norm(self.box[0, :]) # pylint: disable=invalid-name
+        b = np.linalg.norm(self.box[1, :]) # pylint: disable=invalid-name
+        c = np.linalg.norm(self.box[2, :]) # pylint: disable=invalid-name
         alpha = np.arccos(np.inner(self.box[1, :], self.box[2, :])/(b*c))
         beta = np.arccos(np.inner(self.box[2, :], self.box[0, :])/(c*a))
         gamma = np.arccos(np.inner(self.box[0, :], self.box[1, :])/(a*b))
@@ -254,9 +254,9 @@ class AtTraj(object):
 
     def make_dircar_matrices(self):
         # Convert box vectors into cell lengths (a, b, c) and angles (alpha, beta, gamma)
-        a = np.linalg.norm(self.box[0, :])
-        b = np.linalg.norm(self.box[1, :])
-        c = np.linalg.norm(self.box[2, :])
+        a = np.linalg.norm(self.box[0, :]) # pylint: disable=invalid-name
+        b = np.linalg.norm(self.box[1, :]) # pylint: disable=invalid-name
+        c = np.linalg.norm(self.box[2, :]) # pylint: disable=invalid-name
         alpha = np.arccos(np.inner(self.box[1, :], self.box[2, :])/(b*c))
         beta = np.arccos(np.inner(self.box[2, :], self.box[0, :])/(c*a))
         gamma = np.arccos(np.inner(self.box[0, :], self.box[1, :])/(a*b))
@@ -549,8 +549,8 @@ def is_sierpinski_carpet_filled(level, coords):
 
     multiplier = 3**level
 
-    x = int(coords[0]*multiplier)
-    y = int(coords[1]*multiplier)
+    x = int(coords[0]*multiplier) # pylint: disable=invalid-name
+    y = int(coords[1]*multiplier) # pylint: disable=invalid-name
 
     while True:
         if x == 0 and y == 0:
@@ -559,7 +559,7 @@ def is_sierpinski_carpet_filled(level, coords):
         if x%3 == 1 and y%3 == 1:
             return False
 
-        x = int(x/3)
-        y = int(y/3)
+        x = int(x/3) # pylint: disable=invalid-name
+        y = int(y/3) # pylint: disable=invalid-name
 
     return True
