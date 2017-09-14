@@ -1,3 +1,4 @@
+"""xtal is an umbrella package for various tools used to manipulate atomic trajectories"""
 import copy
 import numpy as np
 import progressbar
@@ -12,51 +13,62 @@ class AtTraj(object):
         self.description = ""
         self.mat_dir_to_car = np.zeros([3, 3])
         self.mat_car_to_dir = np.zeros([3, 3])
+        self.boxvolume = 0.0
         print 'Atomic trajectory initialized'
 
     def create_snapshot(self, snapshot):
+        """Append a new snapshot to the snapshot list"""
         newsnapshot = snapshot(self)
         self.snaplist.append(newsnapshot)
         return newsnapshot
 
     def dirtocar(self):
+        """Convert all atoms in trajectory to cartesian coordinates"""
         for snapshot in self.snaplist:
             for atom in snapshot.atomlist:
                 atom.dirtocar()
 
     def cartodir(self):
+        """Convert all atoms in trajectory to fractional coordinates"""
         for snapshot in self.snaplist:
             for atom in snapshot.atomlist:
                 atom.cartodir()
 
     def remap_id(self, old_id, new_id):
+        """Rewrite all atom old_id in trajectory to new_id"""
         for snapshot in self.snaplist:
             for atom in snapshot.atomlist:
                 atom.remap_id(old_id, new_id)
 
     def vectortocar(self, inputvec):
+        """Convert any vector from fractional units to cartesian"""
         return np.inner(self.mat_dir_to_car, inputvec)
 
     def vectortodir(self, inputvec):
+        """Convert any vector from cartesian units to fractional units"""
         return np.inner(self.mat_car_to_dir, inputvec)
 
     def move(self, vector):
+        """Move all atoms in the trajectory by given cartesian vector"""
         for snapshot in self.snaplist:
             for atom in snapshot.atomlist:
                 atom.move(vector)
 
     def inbox(self):
+        """Fold all atom positions to lie within the simulation cell assuming PBC"""
         for snapshot in self.snaplist:
             for atom in snapshot.atomlist:
                 atom.fract = atom.fract - np.floor(atom.fract)
                 atom.dirtocar()
 
     def rotate(self, center, angle):
+        """Rotate all atoms in the trajectory by given angle about given center"""
         for snapshot in self.snaplist:
             snapshot.rotate(center, angle)
 
 
     def make_periodic(self, num_of_images):
+        """Create periodic images all snapshots of current simulation cell"""
         newprogressbar = progressbar.ProgressBar()
         for snapshot in newprogressbar(self.snaplist):
             snapshot.make_periodic(num_of_images)
@@ -109,7 +121,7 @@ class AtTraj(object):
 
 
     def read_snapshot_vasp(self, filename):
-
+        """Read new VASP snapshot from file and append to current trajectory"""
         snapshot = self.create_snapshot(Snapshot)
 
         vasp_snapfile = open(filename, "r")
@@ -154,6 +166,7 @@ class AtTraj(object):
 
 
     def read_trajectory_pwp(self, directory):
+        """Read new trajectory from PWP data directory"""
         bohr_to_angstrom = 0.52917724900001
         boxfilename = directory+"/qm_box.d"
         pwp_boxfile = open(boxfilename, "r")
@@ -218,6 +231,7 @@ class AtTraj(object):
 
 
     def abc_to_box(self):
+        """Convert cell lengths (a, b, c) and angles (alpha, beta, gamma) into box vectors"""
         a = self.abc[0] # pylint: disable=invalid-name
         b = self.abc[1] # pylint: disable=invalid-name
         c = self.abc[2] # pylint: disable=invalid-name
@@ -241,7 +255,7 @@ class AtTraj(object):
 
 
     def box_to_abc(self):
-        # Convert box vectors into cell lengths (a, b, c) and angles (alpha, beta, gamma)
+        """Convert box vectors into cell lengths (a, b, c) and angles (alpha, beta, gamma)"""
         a = np.linalg.norm(self.box[0, :]) # pylint: disable=invalid-name
         b = np.linalg.norm(self.box[1, :]) # pylint: disable=invalid-name
         c = np.linalg.norm(self.box[2, :]) # pylint: disable=invalid-name
@@ -253,7 +267,7 @@ class AtTraj(object):
 
 
     def make_dircar_matrices(self):
-        # Convert box vectors into cell lengths (a, b, c) and angles (alpha, beta, gamma)
+        """Construct matrices to convert between direct and cartesian coordinates"""
         a = np.linalg.norm(self.box[0, :]) # pylint: disable=invalid-name
         b = np.linalg.norm(self.box[1, :]) # pylint: disable=invalid-name
         c = np.linalg.norm(self.box[2, :]) # pylint: disable=invalid-name
@@ -292,12 +306,14 @@ class AtTraj(object):
 
 
     def sort_by_element(self):
+        """Sort all snapshots in the trajectory by element"""
         for snapshot in self.snaplist:
             snapshot.atomlist.sort_by_element()
 
 
 
     def identical_sort(self, refsnap, opsnap):
+        """Copy atom sort order from one snapshot to another - uses PBC"""
         for refindex, refatom in enumerate(refsnap.atomlist):
             mindist = np.linalg.norm(self.abc)
             for opindex in range(refindex, len(opsnap.atomlist)):
@@ -313,7 +329,7 @@ class AtTraj(object):
 
 
     def nonp_identical_sort(self, refsnap, opsnap):
-        # Operates only on the fractional coordinates in a non-periodic unit cell
+        """Copy atom sort order from one snapshot to another - does not use PBC"""
         for refindex, refatom in enumerate(refsnap.atomlist):
             mindist = 1.0
             for opindex in range(refindex, len(opsnap.atomlist)):
@@ -339,26 +355,30 @@ class Snapshot(AtTraj):
         self.atomlist = list()
 
     def create_atom(self, atom):
+        """Create a new Atom instance and append to current snapshot"""
         newatom = atom(self)
         self.atomlist.append(newatom)
         return newatom
 
     def dirtocar(self):
+        """Convert all atoms in snapshot to cartesian coordinates"""
         for atom in self.atomlist:
             atom.dirtocar()
 
     def cartodir(self):
+        """Convert all atoms in snapshot to fractional coordinates"""
         for atom in self.atomlist:
             atom.cartodir()
 
     def rotate(self, center, angle):
+        """Rotate all atoms in the snapshot by given angle about given center"""
         for atom in self.atomlist:
             atom.rotate(center, angle)
 
 
 
     def make_periodic(self, num_of_images):
-        # Duplicate self.atomlist -- Dont want to (re)duplicate all the new atoms
+        """Create periodic images of the current snapshot of current simulation cell"""
         original_atomlist = list(self.atomlist)
         # Clear the original list
         self.atomlist = []
@@ -382,6 +402,7 @@ class Snapshot(AtTraj):
 
 
     def write_snapshot_vasp(self, filename, write_in_direct):
+        """Write out positions of atoms in the current snapshot in the VASP POSCAR format"""
         vasp_snapfile = open(filename, "w")
         vasp_snapfile.write(self.trajectory.description+'\n')
         vasp_snapfile.write('1.000000\n') # Default multiplier for all VASP files
@@ -429,13 +450,13 @@ class Snapshot(AtTraj):
 
 
     def remove_overlap(self, cutoff):
-        # Remove one of a pair of atoms that are within <cutoff> distance of each other
-        # <cutoff> is given in Angstroms
+        """Remove one of a pair of atoms that are within <cutoff> distance of each other
+        <cutoff> is given in Angstroms
 
-        # Atomlist is sorted according to x- y- and z- positions
-        # Loop through the atomlist to find out if atom i and i+1 are within cutoff.
-        # If yes, remove atom i from the atomlist
-        # Loop until you don't find any neighbors within the cutoff
+        Atomlist is sorted according to x- y- and z- positions
+        Loop through the atomlist to find out if atom i and i+1 are within cutoff.
+        If yes, remove atom i from the atomlist
+        Loop until you don't find any neighbors within the cutoff"""
 
         num_of_initial_atoms = len(self.atomlist)
         num_of_removed_atoms = 0
@@ -483,6 +504,7 @@ class Snapshot(AtTraj):
 
 
     def pbc_distance(self, atom1, atom2):
+        """Calculate minimum distance between two atoms assuming PBC"""
         atom1.fract = atom1.fract - np.floor(atom2.fract)
         atom2.fract = atom2.fract - np.floor(atom2.fract)
         diff0 = atom2.fract - atom1.fract
@@ -513,19 +535,24 @@ class Atom(Snapshot):
     cart = np.ndarray((1, 3))
 
     def dirtocar(self):
+        """Convert current atom to cartesian coordinates"""
         self.cart = np.array(np.inner(self.snapshot.trajectory.mat_dir_to_car, self.fract))
 
     def cartodir(self):
+        """Convert current atom to fractional coordinates"""
         self.fract = np.array(np.inner(self.snapshot.trajectory.mat_car_to_dir, self.cart))
 
     def move(self, vector):
+        """Move current atom by given cartesian vector"""
         self.cart = self.cart + vector
 
     def remap_id(self, old_id, new_id):
+        """Rewrite atom old_id to new_id"""
         if self.element == old_id:
             self.element = new_id
 
     def rotate(self, center, angle):
+        """Rotate current atom by given angle about given center"""
         initpos = self.cart[[0, 1]]
         recenter = initpos - center
         rotmat = np.array([[np.cos(angle), 0.0-np.sin(angle)], [np.sin(angle), np.cos(angle)]])
@@ -541,11 +568,11 @@ class Atom(Snapshot):
 
 
 def is_sierpinski_carpet_filled(level, coords):
-    # Calculate if the given fractional coordinates correspond to a filed pixel
-    # in the Sierpinksi carpet fractal of a given level
-    #
-    # Multiply the fractional coordinate with 3^n (for n = level..1) and check to see
-    # if it leaves a reminder of 1 upon division by 3 (i.e. it is the middle cell at any level)
+    """Calculate if the given fractional coordinates correspond to a filed pixel
+    in the Sierpinksi carpet fractal of a given level
+
+    Multiply the fractional coordinate with 3^n (for n = level..1) and check to see
+    if it leaves a reminder of 1 upon division by 3 (i.e. it is the middle cell at any level)"""
 
     multiplier = 3**level
 
