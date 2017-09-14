@@ -134,7 +134,7 @@ class AtTraj(object):
 
         if isindirectcoords:
             for index, numbers in enumerate(atoms_of_type):
-                for thistype in range(0, numbers):
+                for thistype in range(0, numbers):  # dummy counter #pylint: disable=unused-variable
                     basisline = vasp_snapfile.readline()
                     myatom = snapshot.create_atom(Atom)
                     myatom.fract = np.array(map(float, basisline.split()))
@@ -187,7 +187,6 @@ class AtTraj(object):
             thissnapshot = self.create_snapshot(Snapshot)
 
             header = map(int, firstline.split())
-            snapid = header[0]
             numelements = header[1]
 
             numatoms_per_element = list()
@@ -213,7 +212,7 @@ class AtTraj(object):
 
             atomindex = 0
             for element in range(0, numelements):
-                for atom in range(0, numatoms_per_element[element]):
+                for atom in range(0, numatoms_per_element[element]): # pylint: disable=unused-variable
                     thissnapshot.atomlist[atomindex].element = 'UE'+str(element)
                     atomindex += 1
 
@@ -439,7 +438,6 @@ class Snapshot(AtTraj):
         # Loop until you don't find any neighbors within the cutoff
 
         num_of_initial_atoms = len(self.atomlist)
-        removed_atoms = []
         num_of_removed_atoms = 0
 
         found_duplicate_atoms = True
@@ -450,7 +448,7 @@ class Snapshot(AtTraj):
             self.atomlist.sort(key=lambda x: int(x.cart[0]))
             self.atomlist.sort(key=lambda x: int(x.cart[1]))
             self.atomlist.sort(key=lambda x: int(x.cart[2]))
-            for index, atom in enumerate(self.atomlist):
+            for index, atom in enumerate(self.atomlist): # pylint: disable=unused-variable
                 if index < len(self.atomlist)-1: # Don't want last item, must compare index, index+1
                     if self.pbc_distance(self.atomlist[index], self.atomlist[index+1]) < cutoff:
                         del self.atomlist[index]
@@ -477,8 +475,11 @@ class Snapshot(AtTraj):
                         num_of_removed_atoms += 1
                         found_duplicate_atom = True
 
-        print num_of_removed_atoms, 'atoms removed. Atomlist size reduced from', \
-              num_of_initial_atoms, 'to', len(self.atomlist)
+        if found_duplicate_atom:
+            print 'No duplicate atoms found.'
+        else:
+            print num_of_removed_atoms, 'atoms removed. Atomlist size reduced from', \
+                  num_of_initial_atoms, 'to', len(self.atomlist)
 
 
     def pbc_distance(self, atom1, atom2):
