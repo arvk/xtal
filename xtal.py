@@ -29,10 +29,10 @@ class AtTraj(object):
             for atom in snapshot.atomlist:
                 atom.cartodir()
 
-    def remapID(self, oldID, newID):
+    def remap_id(self, old_id, new_id):
         for snapshot in self.snaplist:
             for atom in snapshot.atomlist:
-                atom.remapID(oldID, newID)
+                atom.remap_id(old_id, new_id)
 
     def vectortocar(self, inputvec):
         return np.inner(self.mat_dir_to_car, inputvec)
@@ -100,7 +100,8 @@ class AtTraj(object):
     #     for thisatomcount in range(0, atomcount):
     #         basisline = lammps_snapfile.readline()
     #         myatom = Atom()
-    #         myatom.element, myatom.cart = [basisline.split()[0], np.array(map(float, basisline.split()[1:4]))]
+    #         myatom.element, myatom.cart = [basisline.split()[0],
+    #                                        np.array(map(float, basisline.split()[1:4]))]
     #         self.atomlist.append(myatom)
     #     self.cartodir()
 
@@ -129,7 +130,7 @@ class AtTraj(object):
         basisline = vasp_snapfile.readline()
         atoms_of_type = map(int, basisline.split())
 
-        isindirectcoords = vasp_snapfile.readline().lower().strip()[0] == 'd'  # Check if the coordinates are in Direct or Cartesian
+        isindirectcoords = vasp_snapfile.readline().lower().strip()[0] == 'd' # Check Dir. or Cart.
 
         if isindirectcoords:
             for index, numbers in enumerate(atoms_of_type):
@@ -138,7 +139,7 @@ class AtTraj(object):
                     myatom = snapshot.create_atom(Atom)
                     myatom.fract = np.array(map(float, basisline.split()))
                     myatom.element = atarray[index].upper()
-            self.dirtocar() # Populate the cartesian position values from the fractional coordinates for each atom
+            self.dirtocar() # Populate cartesian values from fractional coordinates for each atom
         else:
             for index, numbers in enumerate(atoms_of_type):
                 for thistype in range(0, numbers):
@@ -146,13 +147,13 @@ class AtTraj(object):
                     myatom = snapshot.create_atom(Atom)
                     myatom.cart = np.array(map(float, basisline.split()))
                     myatom.element = atarray[index].upper()
-            self.cartodir() # Populate fractional coordinates from the cartesian position of each atom
+            self.cartodir() # Populate fractional coordinates from cartesian values of each atom
 
         vasp_snapfile.close()
 
 
 
-    def read_trajectory_PWP(self, directory):
+    def read_trajectory_pwp(self, directory):
         bohr_to_angstrom = 0.52917724900001
         boxfilename = directory+"/qm_box.d"
         pwp_boxfile = open(boxfilename, "r")
@@ -205,7 +206,9 @@ class AtTraj(object):
                 for index in range(0, 3):
                     if numatoms >= ((line*3)+index+1):
                         thisatom = thissnapshot.create_atom(Atom)
-                        thisatom.fract = np.array([thisline[(index*3)+0], thisline[(index*3)+1], thisline[(index*3)+2]])
+                        thisatom.fract = np.array([thisline[(index*3)+0],
+                                                   thisline[(index*3)+1],
+                                                   thisline[(index*3)+2]])
                         thisatom.fract = thisatom.fract * multiplier
 
             atomindex = 0
@@ -223,9 +226,18 @@ class AtTraj(object):
         beta = self.ang[1]
         gamma = self.ang[2]
         box = np.ndarray([3, 3])
-        box[0, :] = [a, 0.0, 0.0]
-        box[1, :] = [b*np.cos(gamma), b*np.sin(gamma), 0.0]
-        box[2, :] = [c*np.cos(beta), c*np.cos(alpha)*np.sin(gamma), c * np.sqrt(1 - (np.cos(beta)*np.cos(beta)) - (np.cos(alpha)*np.sin(gamma)*np.cos(alpha)*np.sin(gamma)))]
+        box[0, :] = [a,
+                     0.0,
+                     0.0]
+
+        box[1, :] = [b*np.cos(gamma),
+                     b*np.sin(gamma),
+                     0.0]
+
+        box[2, :] = [c*np.cos(beta),
+                     c*np.cos(alpha)*np.sin(gamma),
+                     c*np.sqrt(1 - (np.cos(beta)*np.cos(beta))
+                               - (np.cos(alpha)*np.sin(gamma)*np.cos(alpha)*np.sin(gamma)))]
         self.box = box
 
 
@@ -252,13 +264,31 @@ class AtTraj(object):
 
         self.boxvolume = np.inner(self.box[0, :], np.cross(self.box[1, :], self.box[2, :]))
 
-        self.mat_dir_to_car[0, :] = [a, b * np.cos(gamma), c * np.cos(beta)]
-        self.mat_dir_to_car[1, :] = [0, b * np.sin(gamma), c * ((np.cos(alpha) - (np.cos(beta)*np.cos(gamma)))/ np.sin(gamma))]
-        self.mat_dir_to_car[2, :] = [0, 0, self.boxvolume / (a * b * np.sin(gamma))]
+        self.mat_dir_to_car[0, :] = [a,
+                                     b * np.cos(gamma),
+                                     c * np.cos(beta)]
 
-        self.mat_car_to_dir[0, :] = [1.0/a, 0.0 - (np.cos(gamma)/(a * np.sin(gamma))), b * c * ((np.cos(alpha)*np.cos(gamma)) - np.cos(beta))/(self.boxvolume * np.sin(gamma))]
-        self.mat_car_to_dir[1, :] = [0.0, 1.0 / (b * np.sin(gamma)), a * c * ((np.cos(beta)*np.cos(gamma)) - np.cos(alpha))/(self.boxvolume * np.sin(gamma))]
-        self.mat_car_to_dir[2, :] = [0.0, 0.0, a * b * np.sin(gamma) / self.boxvolume]
+        self.mat_dir_to_car[1, :] = [0,
+                                     b*np.sin(gamma),
+                                     c*((np.cos(alpha)-(np.cos(beta)*np.cos(gamma)))/np.sin(gamma))]
+
+        self.mat_dir_to_car[2, :] = [0,
+                                     0,
+                                     self.boxvolume / (a * b * np.sin(gamma))]
+
+        self.mat_car_to_dir[0, :] = [1.0/a,
+                                     0.0 - (np.cos(gamma)/(a * np.sin(gamma))),
+                                     b * c * ((np.cos(alpha)*np.cos(gamma))
+                                              - np.cos(beta))/(self.boxvolume * np.sin(gamma))]
+
+        self.mat_car_to_dir[1, :] = [0.0,
+                                     1.0 / (b * np.sin(gamma)),
+                                     a * c * ((np.cos(beta)*np.cos(gamma))
+                                              - np.cos(alpha))/(self.boxvolume * np.sin(gamma))]
+
+        self.mat_car_to_dir[2, :] = [0.0,
+                                     0.0,
+                                     a * b * np.sin(gamma) / self.boxvolume]
 
 
 
@@ -278,7 +308,8 @@ class AtTraj(object):
                     swapindex = opindex
                     mindist = currdist
 
-            opsnap.atomlist[swapindex], opsnap.atomlist[refindex] = opsnap.atomlist[refindex], opsnap.atomlist[swapindex]
+            opsnap.atomlist[swapindex], opsnap.atomlist[refindex] \
+                = opsnap.atomlist[refindex], opsnap.atomlist[swapindex]
 
 
 
@@ -293,7 +324,8 @@ class AtTraj(object):
                     swapindex = opindex
                     mindist = currdist
 
-            opsnap.atomlist[swapindex], opsnap.atomlist[refindex] = opsnap.atomlist[refindex], opsnap.atomlist[swapindex]
+            opsnap.atomlist[swapindex], opsnap.atomlist[refindex] \
+                = opsnap.atomlist[refindex], opsnap.atomlist[swapindex]
 
 
 
@@ -366,7 +398,8 @@ class Snapshot(AtTraj):
         uniquesdict = {}
         uniquesdict1 = {}
         for uniqueelement in uniqueslist:
-            uniquesdict[uniqueelement] = str(len([p for p in self.atomlist if p.element == uniqueelement]))
+            uniquesdict[uniqueelement] = str(len([p for p in self.atomlist \
+                                                  if p.element == uniqueelement]))
             uniquesdict1[uniqueelement] = uniqueelement
         uniqueslist = uniquesdict.values()
         uniqueslist1 = uniquesdict1.values()
@@ -377,15 +410,19 @@ class Snapshot(AtTraj):
         if write_in_direct:
             vasp_snapfile.write('Direct\n')
             for uniqueelement in uniqueslist1:
-                subsetofatomlist = (atoms for atoms in self.atomlist if atoms.element == uniqueelement)
+                subsetofatomlist = (atoms for atoms in self.atomlist \
+                                    if atoms.element == uniqueelement)
                 for singleatom in subsetofatomlist:
-                    np.savetxt(vasp_snapfile, singleatom.fract[None], fmt='%19.16f', delimiter="   ", newline="\n ") # np.savetxt has problems with 1D array writing
+                    np.savetxt(vasp_snapfile, singleatom.fract[None],
+                               fmt='%19.16f', delimiter="   ", newline="\n ")
         else:
             vasp_snapfile.write('Cartesian\n')
             for uniqueelement in uniqueslist1:
-                subsetofatomlist = (atoms for atoms in self.atomlist if atoms.element == uniqueelement)
+                subsetofatomlist = (atoms for atoms in self.atomlist
+                                    if atoms.element == uniqueelement)
                 for singleatom in subsetofatomlist:
-                    np.savetxt(vasp_snapfile, singleatom.cart[None], fmt='%19.16f', delimiter="   ", newline="\n ") # np.savetxt has problems with 1D array writing
+                    np.savetxt(vasp_snapfile, singleatom.cart[None],
+                               fmt='%19.16f', delimiter="   ", newline="\n ")
 
 
         vasp_snapfile.close()
@@ -397,7 +434,8 @@ class Snapshot(AtTraj):
         # <cutoff> is given in Angstroms
 
         # Atomlist is sorted according to x- y- and z- positions
-        # Loop through the atomlist to find out if atom i and i+1 are within cutoff. If yes, remove atom i from the atomlist
+        # Loop through the atomlist to find out if atom i and i+1 are within cutoff.
+        # If yes, remove atom i from the atomlist
         # Loop until you don't find any neighbors within the cutoff
 
         num_of_initial_atoms = len(self.atomlist)
@@ -413,7 +451,7 @@ class Snapshot(AtTraj):
             self.atomlist.sort(key=lambda x: int(x.cart[1]))
             self.atomlist.sort(key=lambda x: int(x.cart[2]))
             for index, atom in enumerate(self.atomlist):
-                if index < len(self.atomlist)-1: # We don't want the last element, as we have to compare index index+1
+                if index < len(self.atomlist)-1: # Don't want last item, must compare index, index+1
                     if self.pbc_distance(self.atomlist[index], self.atomlist[index+1]) < cutoff:
                         del self.atomlist[index]
                         num_of_removed_atoms += 1
@@ -423,7 +461,7 @@ class Snapshot(AtTraj):
             self.atomlist.sort(key=lambda x: int(x.cart[2]))
             self.atomlist.sort(key=lambda x: int(x.cart[0]))
             for index, atom in enumerate(self.atomlist):
-                if index < len(self.atomlist)-1: # We don't want the last element, as we have to compare index index+1
+                if index < len(self.atomlist)-1: # Don't want last item, must compare index, index+1
                     if self.pbc_distance(self.atomlist[index], self.atomlist[index+1]) < cutoff:
                         del self.atomlist[index]
                         num_of_removed_atoms += 1
@@ -433,13 +471,14 @@ class Snapshot(AtTraj):
             self.atomlist.sort(key=lambda x: int(x.cart[0]))
             self.atomlist.sort(key=lambda x: int(x.cart[1]))
             for index, atom in enumerate(self.atomlist):
-                if index < len(self.atomlist)-1: # We don't want the last element, as we have to compare index index+1
+                if index < len(self.atomlist)-1: # Don't want last item, must compare index, index+1
                     if self.pbc_distance(self.atomlist[index], self.atomlist[index+1]) < cutoff:
                         del self.atomlist[index]
                         num_of_removed_atoms += 1
                         found_duplicate_atom = True
 
-        print num_of_removed_atoms, 'atoms removed. Atomlist size reduced from', num_of_initial_atoms, 'to', len(self.atomlist)
+        print num_of_removed_atoms, 'atoms removed. Atomlist size reduced from', \
+              num_of_initial_atoms, 'to', len(self.atomlist)
 
 
     def pbc_distance(self, atom1, atom2):
@@ -481,9 +520,9 @@ class Atom(Snapshot):
     def move(self, vector):
         self.cart = self.cart + vector
 
-    def remapID(self, oldID, newID):
-        if self.element == oldID:
-            self.element = newID
+    def remap_id(self, old_id, new_id):
+        if self.element == old_id:
+            self.element = new_id
 
     def rotate(self, center, angle):
         initpos = self.cart[[0, 1]]
@@ -500,10 +539,12 @@ class Atom(Snapshot):
 
 
 
-def isSierpinskiCarpetFilled(level, coords):
-    # Calculate if the given fractional coordinates correspond to a filed pixel in the Sierpinksi carpet fractal of a given level
-
-    # Multiply the fractional coordinate with 3^n (for n = level..1) and check to see if it leaves a reminder of 1 upon division by 3 (i.e. it is the middle cell at any level)
+def is_sierpinski_carpet_filled(level, coords):
+    # Calculate if the given fractional coordinates correspond to a filed pixel
+    # in the Sierpinksi carpet fractal of a given level
+    #
+    # Multiply the fractional coordinate with 3^n (for n = level..1) and check to see
+    # if it leaves a reminder of 1 upon division by 3 (i.e. it is the middle cell at any level)
 
     multiplier = 3**level
 
