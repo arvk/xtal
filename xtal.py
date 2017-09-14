@@ -1,5 +1,5 @@
-import numpy as np
 import copy
+import numpy as np
 import progressbar
 
 class AtTraj(object):
@@ -180,7 +180,7 @@ class AtTraj(object):
         while True:
             firstline = pwp_posfile.readline()
 
-            if (firstline == ''):
+            if firstline == '':
                 break
 
             thissnapshot = self.create_snapshot(Snapshot)
@@ -203,7 +203,7 @@ class AtTraj(object):
             for line in range(0, numlines):
                 thisline = map(float, pwp_posfile.readline().split())
                 for index in range(0, 3):
-                    if (numatoms >= ((line*3)+index+1)):
+                    if numatoms >= ((line*3)+index+1):
                         thisatom = thissnapshot.create_atom(Atom)
                         thisatom.fract = np.array([thisline[(index*3)+0], thisline[(index*3)+1], thisline[(index*3)+2]])
                         thisatom.fract = thisatom.fract * multiplier
@@ -274,7 +274,7 @@ class AtTraj(object):
             for opindex in range(refindex, len(opsnap.atomlist)):
                 currdist = opsnap.pbc_distance(opsnap.atomlist[opindex], refatom)
 
-                if (currdist <= mindist):
+                if currdist <= mindist:
                     swapindex = opindex
                     mindist = currdist
 
@@ -289,7 +289,7 @@ class AtTraj(object):
             for opindex in range(refindex, len(opsnap.atomlist)):
                 currdist = np.linalg.norm(opsnap.atomlist[opindex].fract - refatom.fract)
 
-                if (currdist <= mindist):
+                if currdist <= mindist:
                     swapindex = opindex
                     mindist = currdist
 
@@ -414,7 +414,7 @@ class Snapshot(AtTraj):
             self.atomlist.sort(key=lambda x: int(x.cart[2]))
             for index, atom in enumerate(self.atomlist):
                 if index < len(self.atomlist)-1: # We don't want the last element, as we have to compare index index+1
-                    if(self.pbc_distance(self.atomlist[index], self.atomlist[index+1]) < cutoff):
+                    if self.pbc_distance(self.atomlist[index], self.atomlist[index+1]) < cutoff:
                         del self.atomlist[index]
                         num_of_removed_atoms += 1
                         found_duplicate_atom = True
@@ -424,7 +424,7 @@ class Snapshot(AtTraj):
             self.atomlist.sort(key=lambda x: int(x.cart[0]))
             for index, atom in enumerate(self.atomlist):
                 if index < len(self.atomlist)-1: # We don't want the last element, as we have to compare index index+1
-                    if(self.pbc_distance(self.atomlist[index], self.atomlist[index+1]) < cutoff):
+                    if self.pbc_distance(self.atomlist[index], self.atomlist[index+1]) < cutoff:
                         del self.atomlist[index]
                         num_of_removed_atoms += 1
                         found_duplicate_atom = True
@@ -434,7 +434,7 @@ class Snapshot(AtTraj):
             self.atomlist.sort(key=lambda x: int(x.cart[1]))
             for index, atom in enumerate(self.atomlist):
                 if index < len(self.atomlist)-1: # We don't want the last element, as we have to compare index index+1
-                    if(self.pbc_distance(self.atomlist[index], self.atomlist[index+1]) < cutoff):
+                    if self.pbc_distance(self.atomlist[index], self.atomlist[index+1]) < cutoff:
                         del self.atomlist[index]
                         num_of_removed_atoms += 1
                         found_duplicate_atom = True
@@ -482,7 +482,7 @@ class Atom(Snapshot):
         self.cart = self.cart + vector
 
     def remapID(self, oldID, newID):
-        if (self.element == oldID):
+        if self.element == oldID:
             self.element = newID
 
     def rotate(self, center, angle):
@@ -511,10 +511,10 @@ def isSierpinskiCarpetFilled(level, coords):
     y = int(coords[1]*multiplier)
 
     while True:
-        if (x == 0 and y == 0):
+        if x == 0 and y == 0:
             break
 
-        if (x%3 == 1 and y%3 == 1):
+        if x%3 == 1 and y%3 == 1:
             return False
 
         x = int(x/3)
