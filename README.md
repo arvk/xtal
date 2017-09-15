@@ -12,4 +12,4 @@ Contributing to xtal is easy, simply fork the repo, add you code and documentati
 
 ## License
 
-The passive film model source code and documentation are distributed 'as is' under the [MIT License](LICENSE).
+The xtal source code and documentation are distributed 'as is' under the [MIT License](LICENSE).
