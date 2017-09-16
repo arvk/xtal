@@ -1,5 +1,7 @@
 import xtal
 import numpy as np
+import filecmp
+import os
 
 # Testing VASP integration
 class TestVASP(object):
@@ -16,7 +18,6 @@ class TestVASP(object):
         u.read_snapshot_vasp('tests/POSCAR.VASP5.cartesian.unitcell')
         assert len(u.snaplist[0].atomlist) == 3
 
-
     def test_make_periodic_vasp_poscar(self):
         """Test if VASP5 POSCARs an be PBC replicated"""
         u = xtal.AtTraj()
@@ -24,13 +25,20 @@ class TestVASP(object):
         u.make_periodic(np.array([5, 5, 3]))
         assert len(u.snaplist[0].atomlist) == 225
 
+    def test_write_vasp_poscar_cartesian(self):
+        """Test if VASP5 POSCARs can be written in cartesian coordinates"""
+        u = xtal.AtTraj()
+        u.read_snapshot_vasp('tests/POSCAR.VASP5.unitcell')
+        u.snaplist[0].write_snapshot_vasp('tests/POSCAR',False)
+        assert filecmp.cmp('tests/POSCAR','tests/POSCAR.VASP5.cartesian.unitcell')
+        os.remove('tests/POSCAR')
 
 
 # Testing General trajectory methods
 class TestGeneral(object):
 
     def test_remap_id(self):
-        """Test if VASP5 POSCARs can be read"""
+        """Test if trajectory elements can be remapped"""
         u = xtal.AtTraj()
         u.read_snapshot_vasp('tests/POSCAR.VASP5.unitcell')
         u.remap_id('S','TE')
@@ -49,7 +57,7 @@ class TestGeneral(object):
         assert (same_atom_distance == 0.0 and different_atom_distance > 2.40 and different_atom_distance < 2.41)
 
     def test_dirtocar(self):
-        """Test if VASP5 POSCARs can be read"""
+        """Test if fractional units can be converted to cartesian coordinates"""
         u = xtal.AtTraj()
         u.read_snapshot_vasp('tests/POSCAR.VASP5.unitcell')
         u.dirtocar()
