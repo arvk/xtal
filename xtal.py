@@ -25,8 +25,7 @@ class AtTraj(object):
     def dirtocar(self):
         """Convert all atoms in trajectory to cartesian coordinates"""
         for snapshot in self.snaplist:
-            for atom in snapshot.atomlist:
-                atom.dirtocar()
+            snapshot.dirtocar()
 
     def cartodir(self):
         """Convert all atoms in trajectory to fractional coordinates"""
