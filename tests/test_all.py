@@ -80,3 +80,32 @@ class TestGeneral(object):
         u.dirtocar()
         zpos_atom_one = u.snaplist[0].atomlist[0].cart[2]
         assert (zpos_atom_one > 3.0 and zpos_atom_one < 3.1)
+
+    def test_remove_overlap(self):
+        """Test if overlapping atoms are removed based on provided cutoff"""
+        u = xtal.AtTraj()
+        u.read_snapshot_vasp('tests/POSCAR.VASP5.duplicates.unitcell')
+        snapshot = u.snaplist[0]
+        raw_num_atoms = len(snapshot.atomlist)
+
+        # Remove all duplicate atoms closer than 0.11
+        snapshot.remove_overlap(0.11)
+        pt1_pass1_num_atoms = len(snapshot.atomlist)
+        snapshot.remove_overlap(0.11) # second pass shold not change anything
+        pt1_pass2_num_atoms = len(snapshot.atomlist)
+
+        # Remove all duplicate atoms closer than 0.21
+        snapshot.remove_overlap(0.21)
+        pt2_pass1_num_atoms = len(snapshot.atomlist)
+        snapshot.remove_overlap(0.21) # second pass shold not change anything
+        pt2_pass2_num_atoms = len(snapshot.atomlist)
+
+        # Remove all duplicate atoms closer than 0.31
+        snapshot.remove_overlap(0.31)
+        pt3_pass1_num_atoms = len(snapshot.atomlist)
+        snapshot.remove_overlap(0.31) # second pass shold not change anything
+        pt3_pass2_num_atoms = len(snapshot.atomlist)
+
+        assert (raw_num_atoms, pt1_pass1_num_atoms, pt1_pass2_num_atoms, \
+                pt2_pass1_num_atoms, pt2_pass2_num_atoms, \
+                pt3_pass1_num_atoms, pt3_pass2_num_atoms) == (6, 5, 5, 4, 4, 3, 3)
