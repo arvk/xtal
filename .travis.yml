@@ -4,6 +4,7 @@ python:
 before_script:
   - export PYTHONPATH=$PYTHONPATH:$(pwd)
   - pip install progressbar2
+  - pip install pytest-cov
   - pip install coveralls
 script:
   - pytest --cov=xtal
