@@ -37,6 +37,20 @@ class TestVASP(object):
         os.remove('tests/POSCAR')
 
 
+    def test_write_vasp_poscar_direct(self):
+        """Test if VASP5 POSCARs can be written in fractional coordinates"""
+        u = xtal.AtTraj()
+        u.read_snapshot_vasp('tests/POSCAR.VASP5.cartesian.unitcell')
+        u.snaplist[0].write_snapshot_vasp('tests/POSCAR',True)
+        v = xtal.AtTraj()
+        v.read_snapshot_vasp('tests/POSCAR')
+        u_mo_atoms = [atom for atom in u.snaplist[0].atomlist if atom.element == "MO"]
+        v_mo_atoms = [atom for atom in v.snaplist[0].atomlist if atom.element == "MO"]
+        assert np.linalg.norm(u_mo_atoms[0].fract - v_mo_atoms[0].fract) < 0.0001
+        os.remove('tests/POSCAR')
+
+
+
 # Testing General trajectory methods
 class TestGeneral(object):
 
