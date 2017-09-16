@@ -4,11 +4,18 @@ import numpy as np
 # Testing VASP integration
 class TestVASP(object):
 
-    def test_read_vasp_poscar(self):
-        """Test if VASP5 POSCARs can be read"""
+    def test_read_vasp_poscar_direct(self):
+        """Test if VASP5 POSCARs in direct coordinates can be read"""
         u = xtal.AtTraj()
         u.read_snapshot_vasp('tests/POSCAR.VASP5.unitcell')
         assert len(u.snaplist[0].atomlist) == 3
+
+    def test_read_vasp_poscar_cartesian(self):
+        """Test if VASP5 POSCARs in cartesian coordinates can be read"""
+        u = xtal.AtTraj()
+        u.read_snapshot_vasp('tests/POSCAR.VASP5.cartesian.unitcell')
+        assert len(u.snaplist[0].atomlist) == 3
+
 
     def test_make_periodic_vasp_poscar(self):
         """Test if VASP5 POSCARs an be PBC replicated"""
