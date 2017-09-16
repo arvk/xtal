@@ -31,7 +31,6 @@ class TestGeneral(object):
         no_Te_atoms = len([atom for atom in u.snaplist[0].atomlist if atom.element == 'TE'])
         assert (no_S_atoms, no_Te_atoms) == (0,2)
 
-
     def test_pbc_distance(self):
         """Test if distances between atoms are calculated correctly"""
         u = xtal.AtTraj()
@@ -41,3 +40,10 @@ class TestGeneral(object):
         same_atom_distance = u.snaplist[0].pbc_distance(mo_atom,mo_atom)
         different_atom_distance = u.snaplist[0].pbc_distance(mo_atom,s_atom)
         assert (same_atom_distance, different_atom_distance) == (0.0, 2.4084020256748055)
+
+    def test_dirtocar(self):
+        """Test if VASP5 POSCARs can be read"""
+        u = xtal.AtTraj()
+        u.read_snapshot_vasp('tests/POSCAR.VASP5.unitcell')
+        u.dirtocar()
+        assert u.snaplist[0].atomlist[0].cart[2] == 3.0606055605987046
