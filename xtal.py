@@ -495,7 +495,7 @@ class Snapshot(AtTraj):
                         num_of_removed_atoms += 1
                         found_duplicate_atom = True
 
-        if found_duplicate_atom:
+        if not found_duplicate_atom:
             print 'No duplicate atoms found.'
         else:
             print num_of_removed_atoms, 'atoms removed. Atomlist size reduced from', \
