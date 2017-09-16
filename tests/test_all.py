@@ -1,6 +1,5 @@
 import xtal
 import numpy as np
-import filecmp
 import os
 
 # Testing VASP integration
