@@ -1,6 +1,6 @@
 # xtal
 
-[![Build Status](https://travis-ci.org/USCCACS/xtal.svg?branch=unittests)](https://travis-ci.org/USCCACS/xtal)
+[![Build Status](https://travis-ci.org/USCCACS/xtal.svg?branch=unittests)](https://travis-ci.org/USCCACS/xtal) [![Coverage Status](https://coveralls.io/repos/github/USCCACS/xtal/badge.svg?branch=unittests)](https://coveralls.io/github/USCCACS/xtal?branch=unittests)
 
 xtal is an umbrella package for various tools used to manipulate atomic trajectories
 
