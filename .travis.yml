@@ -4,5 +4,8 @@ python:
 before_script:
   - export PYTHONPATH=$PYTHONPATH:$(pwd)
   - pip install progressbar2
+  - pip install coveralls
 script:
-  - pytest # or py.test for Python versions 3.5 and below
+  - pytest --cov=xtal
+after_success:
+  - coveralls
