@@ -46,4 +46,5 @@ class TestGeneral(object):
         u = xtal.AtTraj()
         u.read_snapshot_vasp('tests/POSCAR.VASP5.unitcell')
         u.dirtocar()
-        assert u.snaplist[0].atomlist[0].cart[2] == 3.0606055605987046
+        zpos_atom_one = u.snaplist[0].atomlist[0].cart[2]
+        assert (zpos_atom_one > 3.0 and zpos_atom_one < 3.1)
