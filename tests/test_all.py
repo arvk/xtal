@@ -30,7 +30,11 @@ class TestVASP(object):
         u = xtal.AtTraj()
         u.read_snapshot_vasp('tests/POSCAR.VASP5.unitcell')
         u.snaplist[0].write_snapshot_vasp('tests/POSCAR',False)
-        assert filecmp.cmp('tests/POSCAR','tests/POSCAR.VASP5.cartesian.unitcell')
+        v = xtal.AtTraj()
+        v.read_snapshot_vasp('tests/POSCAR')
+        u_mo_atoms = [atom for atom in u.snaplist[0].atomlist if atom.element == "MO"]
+        v_mo_atoms = [atom for atom in v.snaplist[0].atomlist if atom.element == "MO"]
+        assert np.linalg.norm(u_mo_atoms[0].cart - v_mo_atoms[0].cart) < 0.0001
         os.remove('tests/POSCAR')
 
 
