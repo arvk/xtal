@@ -460,10 +460,10 @@ class Snapshot(AtTraj):
         num_of_initial_atoms = len(self.atomlist)
         num_of_removed_atoms = 0
 
-        found_duplicate_atoms = True
+        found_duplicate_atom = True
 
-        while found_duplicate_atoms:
-            found_duplicate_atoms = False
+        while found_duplicate_atom:
+            found_duplicate_atom = False
 
             self.atomlist.sort(key=lambda x: int(x.cart[0]))
             self.atomlist.sort(key=lambda x: int(x.cart[1]))
