@@ -39,7 +39,7 @@ class TestGeneral(object):
         s_atom = u.snaplist[0].atomlist[1]
         same_atom_distance = u.snaplist[0].pbc_distance(mo_atom,mo_atom)
         different_atom_distance = u.snaplist[0].pbc_distance(mo_atom,s_atom)
-        assert (same_atom_distance, different_atom_distance) == (0.0, 2.4084020256748055)
+        assert (same_atom_distance == 0.0 and different_atom_distance > 2.40 and different_atom_distance < 2.41)
 
     def test_dirtocar(self):
         """Test if VASP5 POSCARs can be read"""
