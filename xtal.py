@@ -374,7 +374,10 @@ class Snapshot(AtTraj):
         for atom in self.atomlist:
             atom.rotate(center, angle)
 
-
+    def move(self, vector):
+        """Move all atoms in the snapshot by given cartesian vector"""
+            for atom in self.atomlist:
+                atom.move(vector)
 
     def make_periodic(self, num_of_images):
         """Create periodic images of the current snapshot of current simulation cell"""
