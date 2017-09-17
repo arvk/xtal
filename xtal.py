@@ -30,8 +30,7 @@ class AtTraj(object):
     def cartodir(self):
         """Convert all atoms in trajectory to fractional coordinates"""
         for snapshot in self.snaplist:
-            for atom in snapshot.atomlist:
-                atom.cartodir()
+            snapshot.cartodir()
 
     def remap_id(self, old_id, new_id):
         """Rewrite all atom old_id in trajectory to new_id"""
