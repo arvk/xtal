@@ -36,7 +36,6 @@ class TestVASP(object):
         assert np.linalg.norm(u_mo_atoms[0].cart - v_mo_atoms[0].cart) < 0.0001
         os.remove('tests/POSCAR')
 
-
     def test_write_vasp_poscar_direct(self):
         """Test if VASP5 POSCARs can be written in fractional coordinates"""
         u = xtal.AtTraj()
@@ -109,3 +108,36 @@ class TestGeneral(object):
         assert (raw_num_atoms, pt1_pass1_num_atoms, pt1_pass2_num_atoms, \
                 pt2_pass1_num_atoms, pt2_pass2_num_atoms, \
                 pt3_pass1_num_atoms, pt3_pass2_num_atoms) == (6, 5, 5, 4, 4, 3, 3)
+
+    def test_move_atoms(self):
+        """Test if overlapping atoms are removed based on provided cutoff"""
+        u = xtal.AtTraj()
+        u.read_snapshot_vasp('tests/POSCAR.VASP5.unitcell')
+        u.dirtocar()
+        snapshot = u.snaplist[0]
+        mo_atom = [atom for atom in snapshot.atomlist if atom.element == "MO"][0]
+        s_atom_top = [atom for atom in snapshot.atomlist if atom.fract[2] > 0.15][0]
+        s_atom_bottom = [atom for atom in snapshot.atomlist if atom.fract[2] < 0.1][0]
+
+        # Establish baselines
+        top_dist = snapshot.pbc_distance(mo_atom,s_atom_top)
+        bot_dist = snapshot.pbc_distance(mo_atom,s_atom_bottom)
+
+        # Move the top and bottom S atoms by different distances. This should increase pbc_distances
+        s_atom_top.move(np.array([0.0,0.0,5.0]))
+        s_atom_bottom.move(np.array([0.0,0.0,-6.0]))
+        u.cartodir()
+        m1_top_dist = snapshot.pbc_distance(mo_atom,s_atom_top)
+        m1_bot_dist = snapshot.pbc_distance(mo_atom,s_atom_bottom)
+
+        # Move the entire snapshot. This should not change pbc_distances
+        snapshot.move(np.array([0.0,0.0,9.0]))
+        u.cartodir()
+        m2_top_dist = snapshot.pbc_distance(mo_atom,s_atom_top)
+        m2_bot_dist = snapshot.pbc_distance(mo_atom,s_atom_bottom)
+
+        # Test all distances. Initially 2.4, Expands beyond 5.0. And then stays the same
+        assert (top_dist < 2.41 and bot_dist < 2.41 and \
+                m1_top_dist > 5.0 and m1_bot_dist > 6.0 and \
+                np.isclose(m2_top_dist, m1_top_dist, atol=1e-5) and \
+                np.isclose(m2_bot_dist, m1_bot_dist, atol=1e-5))
