@@ -164,3 +164,12 @@ class TestGeneral(object):
         zpos_fract = u.snaplist[0].atomlist[0].fract[2]
         zpos_cart = u.snaplist[0].atomlist[0].cart[2]
         assert (zpos_fract < 0.3 and zpos_cart < 10.0)
+
+
+    def test_boxtoabc(self):
+        """Test if atoms can be folded back into the supercell"""
+        u = xtal.AtTraj()
+        u.read_snapshot_vasp('tests/POSCAR.VASP5.unitcell')
+        u.box_to_abc()
+        assert np.allclose(u.abc, np.array([3.16, 3.16, 27.16]), atol=0.1) and \
+               np.allclose(u.ang, np.array([np.pi/2, np.pi/2, 2*np.pi/3]), atol=0.1)
