@@ -50,8 +50,7 @@ class AtTraj(object):
     def move(self, vector):
         """Move all atoms in the trajectory by given cartesian vector"""
         for snapshot in self.snaplist:
-            for atom in snapshot.atomlist:
-                atom.move(vector)
+            snapshot.move(vector)
 
     def inbox(self):
         """Fold all atoms in trajectory to lie within the simulation cell assuming PBC"""

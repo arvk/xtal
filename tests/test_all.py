@@ -141,8 +141,8 @@ class TestGeneral(object):
         m1_top_dist = snapshot.pbc_distance(mo_atom,s_atom_top)
         m1_bot_dist = snapshot.pbc_distance(mo_atom,s_atom_bottom)
 
-        # Move the entire snapshot. This should not change pbc_distances
-        snapshot.move(np.array([0.0,0.0,9.0]))
+        # Move the entire trajectory. This should not change pbc_distances
+        u.move(np.array([0.0,0.0,9.0]))
         u.cartodir()
         m2_top_dist = snapshot.pbc_distance(mo_atom,s_atom_top)
         m2_bot_dist = snapshot.pbc_distance(mo_atom,s_atom_bottom)
