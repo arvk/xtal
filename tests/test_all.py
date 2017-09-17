@@ -152,3 +152,15 @@ class TestGeneral(object):
                 m1_top_dist > 5.0 and m1_bot_dist > 6.0 and \
                 np.isclose(m2_top_dist, m1_top_dist, atol=1e-5) and \
                 np.isclose(m2_bot_dist, m1_bot_dist, atol=1e-5))
+
+
+    def test_inbox(self):
+        """Test if atoms can be folded back into the supercell"""
+        u = xtal.AtTraj()
+        u.read_snapshot_vasp('tests/POSCAR.VASP5.cartesian.unitcell')
+        u.snaplist[0].atomlist[0].move(np.array([0.0,0.0,30.0]))
+        u.cartodir()
+        u.inbox()
+        zpos_fract = u.snaplist[0].atomlist[0].fract[2]
+        zpos_cart = u.snaplist[0].atomlist[0].cart[2]
+        assert (zpos_fract < 0.3 and zpos_cart < 10.0)
