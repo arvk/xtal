@@ -54,11 +54,9 @@ class AtTraj(object):
                 atom.move(vector)
 
     def inbox(self):
-        """Fold all atom positions to lie within the simulation cell assuming PBC"""
+        """Fold all atoms in trajectory to lie within the simulation cell assuming PBC"""
         for snapshot in self.snaplist:
-            for atom in snapshot.atomlist:
-                atom.fract = atom.fract - np.floor(atom.fract)
-                atom.dirtocar()
+            snapshot.inbox()
 
     def rotate(self, center, angle):
         """Rotate all atoms in the trajectory by given angle about given center"""
@@ -402,6 +400,10 @@ class Snapshot(AtTraj):
         self.atomlist.sort(key=lambda x: x.element)
 
 
+    def inbox(self):
+        """Fold all atoms in Snapshot to lie within the simulation cell assuming PBC"""
+        for atom in self.atomlist:
+            atom.inbox()
 
     def write_snapshot_vasp(self, filename, write_in_direct):
         """Write out positions of atoms in the current snapshot in the VASP POSCAR format"""
@@ -563,6 +565,10 @@ class Atom(Snapshot):
         self.cart[0] = finalpos[0]
         self.cart[1] = finalpos[1]
 
+    def inbox(self):
+        """Fold atom position to lie within the simulation cell assuming PBC"""
+        self.fract = self.fract - np.floor(self.fract)
+        self.dirtocar()
 
 
 #--------------------------------------------------
