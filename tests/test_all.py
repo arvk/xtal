@@ -173,3 +173,20 @@ class TestGeneral(object):
         u.box_to_abc()
         assert np.allclose(u.abc, np.array([3.16, 3.16, 27.16]), atol=0.1) and \
                np.allclose(u.ang, np.array([np.pi/2, np.pi/2, 2*np.pi/3]), atol=0.1)
+
+    def test_fractal(self):
+        """Test fractal method"""
+        u = xtal.AtTraj()
+        u.read_snapshot_vasp('tests/POSCAR.VASP5.unitcell')
+        u.make_periodic(np.array([100,100,1]))
+        lv0 = len(u.snaplist[0].atomlist)
+        selatoms = [atom for atom in u.snaplist[0].atomlist if xtal.is_sierpinski_carpet_filled(1,atom.fract)]
+        lv1 = len(selatoms)
+        selatoms = [atom for atom in u.snaplist[0].atomlist if xtal.is_sierpinski_carpet_filled(2,atom.fract)]
+        lv2 = len(selatoms)
+        selatoms = [atom for atom in u.snaplist[0].atomlist if xtal.is_sierpinski_carpet_filled(3,atom.fract)]
+        lv3 = len(selatoms)
+        selatoms = [atom for atom in u.snaplist[0].atomlist if xtal.is_sierpinski_carpet_filled(4,atom.fract)]
+        lv4 = len(selatoms)
+
+        assert (lv0, lv1, lv2, lv3, lv4) == (30000, 26634, 23730, 21210, 18813)
