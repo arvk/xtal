@@ -49,6 +49,17 @@ class TestVASP(object):
         os.remove('tests/POSCAR')
 
 
+# Testing PWP integration
+class TestPWP(object):
+
+    def test_read_pwp_trajectory(self):
+        """Test if a PWP trajectory can be read"""
+        u = xtal.AtTraj()
+        u.read_trajectory_pwp('tests/pwp_aimd')
+        num_snapshots = len(u.snaplist)
+        num_atoms_last_snapshot = len(u.snaplist[-1].atomlist)
+        assert (num_snapshots, num_atoms_last_snapshot) == (101, 54)
+
 
 # Testing General trajectory methods
 class TestGeneral(object):
