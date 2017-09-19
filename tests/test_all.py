@@ -192,7 +192,7 @@ class TestGeneral(object):
         assert (lv0, lv1, lv2, lv3, lv4) == (30000, 26634, 23730, 21210, 18813)
 
 
-    def test_nonpidentisort(self):
+    def test_identisort_cartesian(self):
         """Test non periodic identisort"""
         u = xtal.AtTraj()
         u.read_snapshot_vasp('tests/POSCAR.VASP5.unitcell')
@@ -202,7 +202,7 @@ class TestGeneral(object):
         snap0 = u.snaplist[0]
         snap1 = u.snaplist[1]
 
-        u.nonp_identical_sort(snap0, snap1)
+        u.identical_sort(snap0, snap1,usePBC=False)
         assert np.linalg.norm(snap0.atomlist[0].cart - snap1.atomlist[0].cart) < 0.01 and \
                np.linalg.norm(snap0.atomlist[1].cart - snap1.atomlist[1].cart) < 0.01 and \
                np.linalg.norm(snap0.atomlist[2].cart - snap1.atomlist[2].cart) < 0.01

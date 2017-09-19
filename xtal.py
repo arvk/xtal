@@ -307,12 +307,15 @@ class AtTraj(object):
 
 
 
-    def identical_sort(self, refsnap, opsnap):
+    def identical_sort(self, refsnap, opsnap, usePBC=True):
         """Copy atom sort order from one snapshot to another - uses PBC"""
         for refindex, refatom in enumerate(refsnap.atomlist):
-            mindist = np.linalg.norm(self.abc)
+            mindist = max(np.linalg.norm(self.abc), 1.0)
             for opindex in range(refindex, len(opsnap.atomlist)):
-                currdist = opsnap.pbc_distance(opsnap.atomlist[opindex], refatom)
+                if usePBC:
+                    currdist = opsnap.pbc_distance(opsnap.atomlist[opindex], refatom)
+                else:
+                    currdist = np.linalg.norm(opsnap.atomlist[opindex].fract - refatom.fract)
 
                 if currdist <= mindist:
                     swapindex = opindex
@@ -320,23 +323,6 @@ class AtTraj(object):
 
             opsnap.atomlist[swapindex], opsnap.atomlist[refindex] \
                 = opsnap.atomlist[refindex], opsnap.atomlist[swapindex]
-
-
-
-    def nonp_identical_sort(self, refsnap, opsnap):
-        """Copy atom sort order from one snapshot to another - does not use PBC"""
-        for refindex, refatom in enumerate(refsnap.atomlist):
-            mindist = 1.0
-            for opindex in range(refindex, len(opsnap.atomlist)):
-                currdist = np.linalg.norm(opsnap.atomlist[opindex].fract - refatom.fract)
-
-                if currdist <= mindist:
-                    swapindex = opindex
-                    mindist = currdist
-
-            opsnap.atomlist[swapindex], opsnap.atomlist[refindex] \
-                = opsnap.atomlist[refindex], opsnap.atomlist[swapindex]
-
 
 
 
