@@ -307,12 +307,12 @@ class AtTraj(object):
 
 
 
-    def identical_sort(self, refsnap, opsnap, usePBC=True):
+    def identical_sort(self, refsnap, opsnap, periodic=True):
         """Copy atom sort order from one snapshot to another - uses PBC"""
         for refindex, refatom in enumerate(refsnap.atomlist):
             mindist = max(np.linalg.norm(self.abc), 1.0)
             for opindex in range(refindex, len(opsnap.atomlist)):
-                if usePBC:
+                if periodic:
                     currdist = opsnap.pbc_distance(opsnap.atomlist[opindex], refatom)
                 else:
                     currdist = np.linalg.norm(opsnap.atomlist[opindex].fract - refatom.fract)

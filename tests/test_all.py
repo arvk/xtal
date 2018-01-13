@@ -202,7 +202,7 @@ class TestGeneral(object):
         snap0 = u.snaplist[0]
         snap1 = u.snaplist[1]
 
-        u.identical_sort(snap0, snap1,usePBC=False)
+        u.identical_sort(snap0, snap1, periodic=False)
         assert np.linalg.norm(snap0.atomlist[0].cart - snap1.atomlist[0].cart) < 0.01 and \
                np.linalg.norm(snap0.atomlist[1].cart - snap1.atomlist[1].cart) < 0.01 and \
                np.linalg.norm(snap0.atomlist[2].cart - snap1.atomlist[2].cart) < 0.01
