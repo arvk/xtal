@@ -436,6 +436,20 @@ class Snapshot(AtTraj):
         vasp_snapfile.close()
 
 
+    def write_snapshot_xyz(self, filename):
+        """Write out positions of atoms in the current snapshot in the XYZ format"""
+        xyz_snapfile = open(filename, "w")
+        xyz_snapfile.write(str(len(self.atomlist)) + '\n')
+        if self.trajectory.description == "":
+            xyz_snapfile.write('File produced by xtal\n') # Comment line
+        else:
+            xyz_snapfile.write(self.trajectory.description+'\n') # Comment line
+        for atom in self.atomlist:
+            xyz_snapfile.write((atom.element + '  ' +
+                                np.array2string(atom.cart)).replace('[', '').replace(']', '') +
+                               '\n') # Atom element and cartesian positions
+
+
 
     def remove_overlap(self, cutoff):
         """Remove one of a pair of atoms that are within <cutoff> distance of each other
