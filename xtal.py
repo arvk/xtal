@@ -126,6 +126,46 @@ class AtTraj(object):
 
 
 
+    def read_trajectory_vasp(self, filename):
+        """Read new VASP snapshot from file and append to current trajectory"""
+
+        vasp_trajfile = open(filename, "r")
+
+        self.description = vasp_trajfile.readline().strip()
+        mymultiplier = float(vasp_trajfile.readline())
+
+        self.box[0, :] = map(float, vasp_trajfile.readline().split())
+        self.box[1, :] = map(float, vasp_trajfile.readline().split())
+        self.box[2, :] = map(float, vasp_trajfile.readline().split())
+        self.box = self.box * mymultiplier
+
+        self.make_dircar_matrices() # Uniform representation of box dimensions from POSCAR file
+
+        basisline = vasp_trajfile.readline()
+        atarray = basisline.split()
+
+        basisline = vasp_trajfile.readline()
+        atoms_of_type = map(int, basisline.split())
+
+        while True:
+            basisline = vasp_trajfile.readline().strip()
+            if basisline == '':
+                break
+            snapshot = self.create_snapshot(Snapshot)
+            for index, numbers in enumerate(atoms_of_type):
+                for thistype in range(0, numbers):  # dummy counter #pylint: disable=unused-variable
+                    basisline = vasp_trajfile.readline()
+                    myatom = snapshot.create_atom(Atom)
+                    myatom.fract = np.array(map(float, basisline.split()))
+                    myatom.element = atarray[index].upper()
+
+        self.dirtocar() # Populate cartesian values from fractional coordinates for each atom
+
+        vasp_trajfile.close()
+
+
+
+
     # def read_snapshot_lammps(self, filename):
     #     lammps_snapfile = open(filename, "r")
     #     lammps_snapfile.readline() # Comment line for Timestep
