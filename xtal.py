@@ -113,8 +113,8 @@ class AtTraj(object):
         vasp_trajfile.write("  ".join(uniqueslist1).title()+'\n')
         vasp_trajfile.write("  ".join(uniqueslist)+'\n')
 
-        for snapshotID, snapshot in enumerate(self.snaplist):
-            vasp_trajfile.write('Direct configuration= '+str(snapshotID+1)+'\n')
+        for snapshot_id, snapshot in enumerate(self.snaplist):
+            vasp_trajfile.write('Direct configuration= '+str(snapshot_id+1)+'\n')
             for uniqueelement in uniqueslist1:
                 subsetofatomlist = (atoms for atoms in snapshot.atomlist \
                                     if atoms.element == uniqueelement)
