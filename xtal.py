@@ -76,6 +76,11 @@ class AtTraj(object):
         self.dirtocar()
 
 
+    def write_trajectory_xyz(self, filename):
+        """Write out positions of atoms in the trajectory in the XYZ format"""
+        for snapshot in self.snaplist:
+            snapshot.write_snapshot_xyz(filename, append=True)
+
 
     # def read_snapshot_lammps(self, filename):
     #     lammps_snapfile = open(filename, "r")
@@ -436,9 +441,12 @@ class Snapshot(AtTraj):
         vasp_snapfile.close()
 
 
-    def write_snapshot_xyz(self, filename):
+    def write_snapshot_xyz(self, filename, append=False):
         """Write out positions of atoms in the current snapshot in the XYZ format"""
-        xyz_snapfile = open(filename, "w")
+        if append:
+            xyz_snapfile = open(filename, "a")
+        else:
+            xyz_snapfile = open(filename, "w")
         xyz_snapfile.write(str(len(self.atomlist)) + '\n')
         if self.trajectory.description == "":
             xyz_snapfile.write('File produced by xtal\n') # Comment line
