@@ -82,6 +82,50 @@ class AtTraj(object):
             snapshot.write_snapshot_xyz(filename, append=True)
 
 
+
+    def write_trajectory_vasp(self, filename):
+        """Write out positions of atoms in the trajectory in the VASP XDATCAR format"""
+        vasp_trajfile = open(filename, "w")
+        if self.description == '':
+            vasp_trajfile.write('Produced by xtal\n')
+        else:
+            vasp_trajfile.write(self.description+'\n')
+        vasp_trajfile.write('1.000000\n') # Default multiplier for all VASP files
+        np.savetxt(vasp_trajfile, self.box, fmt='%19.16f', delimiter="   ", newline="\n")
+
+        # Sort atoms by element before counting number of atoms by element
+        firstsnapshot = copy.copy(self.snaplist[0])
+        firstsnapshot.atomlist.sort(key=lambda x: x.element)
+        uniquesdict = {}
+        for singleatom in firstsnapshot.atomlist:
+            uniquesdict[singleatom.element] = singleatom.element
+        uniqueslist = uniquesdict.values()
+
+        uniquesdict = {}
+        uniquesdict1 = {}
+        for uniqueelement in uniqueslist:
+            uniquesdict[uniqueelement] = str(len([p for p in firstsnapshot.atomlist \
+                                                  if p.element == uniqueelement]))
+            uniquesdict1[uniqueelement] = uniqueelement
+        uniqueslist = uniquesdict.values()
+        uniqueslist1 = uniquesdict1.values()
+
+        vasp_trajfile.write("  ".join(uniqueslist1).title()+'\n')
+        vasp_trajfile.write("  ".join(uniqueslist)+'\n')
+
+        for snapshotID, snapshot in enumerate(self.snaplist):
+            vasp_trajfile.write('Direct configuration= '+str(snapshotID+1)+'\n')
+            for uniqueelement in uniqueslist1:
+                subsetofatomlist = (atoms for atoms in snapshot.atomlist \
+                                    if atoms.element == uniqueelement)
+                for singleatom in subsetofatomlist:
+                    np.savetxt(vasp_trajfile, singleatom.fract[None],
+                               fmt='%10.7f', delimiter="   ", newline="\n ")
+
+        vasp_trajfile.close()
+
+
+
     # def read_snapshot_lammps(self, filename):
     #     lammps_snapfile = open(filename, "r")
     #     lammps_snapfile.readline() # Comment line for Timestep
@@ -449,13 +493,14 @@ class Snapshot(AtTraj):
             xyz_snapfile = open(filename, "w")
         xyz_snapfile.write(str(len(self.atomlist)) + '\n')
         if self.trajectory.description == "":
-            xyz_snapfile.write('File produced by xtal\n') # Comment line
+            xyz_snapfile.write('Produced by xtal\n') # Comment line
         else:
             xyz_snapfile.write(self.trajectory.description+'\n') # Comment line
         for atom in self.atomlist:
             xyz_snapfile.write((atom.element + '  ' +
                                 np.array2string(atom.cart)).replace('[', '').replace(']', '') +
                                '\n') # Atom element and cartesian positions
+        xyz_snapfile.close()
 
 
 
