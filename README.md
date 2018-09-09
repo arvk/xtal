@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/USCCACS/xtal.svg?branch=master)](https://travis-ci.org/USCCACS/xtal) [![Coverage Status](https://coveralls.io/repos/github/USCCACS/xtal/badge.svg?branch=master)](https://coveralls.io/github/USCCACS/xtal?branch=master)
 
-xtal is an umbrella package for various tools used to manipulate atomic trajectories
+xtal is an umbrella package for various tools used to manipulate atomic trajectories. Works with LAMMPS, RXMD, and VASP structure files.
 
 
 ## Contributing
