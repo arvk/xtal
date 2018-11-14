@@ -523,7 +523,10 @@ class Snapshot(AtTraj):
     def write_snapshot_vasp(self, filename, write_in_direct):
         '''Write out positions of atoms in the current snapshot in the VASP POSCAR format'''
         vasp_snapfile = open(filename, 'w')
-        vasp_snapfile.write(self.trajectory.description+'\n')
+        if self.trajectory.description == '':
+            vasp_snapfile.write('Produced by xtal\n')
+        else:
+            vasp_snapfile.write(self.trajectory.description+'\n')
         vasp_snapfile.write('1.000000\n') # Default multiplier for all VASP files
         np.savetxt(vasp_snapfile, self.trajectory.box, fmt='%19.16f', delimiter='   ', newline='\n')
 
