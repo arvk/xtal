@@ -343,8 +343,8 @@ class AtTraj(object):
             if thisline[0:6].upper() == 'HETATM' or thisline[0:4].upper() == 'ATOM':
                 myatom = snapshot.create_atom(Atom)
                 myatom.cart = np.array(map(float, thisline[30:54].split()))
-                myatom.element = thisline[76:78].upper()
-                myatom.name = thisline[12:16].upper()
+                myatom.element = thisline[76:78].strip().upper()
+                myatom.name = thisline[12:16].strip().upper()
                 if myatom.element == '':
                     myatom.element = myatom.name
                 if myatom.element == '':
