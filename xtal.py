@@ -315,6 +315,46 @@ class AtTraj(object):
                     atomindex += 1
 
 
+
+
+
+    def read_snapshot_pdb(self, filename):
+        '''Read new PDB snapshot from file and append to current trajectory'''
+        # PDB file is assumed to adhere to PDB File Format v3.3 requirements from Nov 2012
+        # (https://www.wwpdb.org/documentation/file-format-content/format33/v3.3.html)
+
+        snapshot = self.create_snapshot(Snapshot)
+
+        # INITIALIZATION
+        snapshot.trajectory.description = ''
+        snapshot.trajectory.box = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
+
+        pdb_snapfile = open(filename, 'r')
+
+        while True:
+            thisline = pdb_snapfile.readline()
+
+            if thisline == '':
+                break
+
+            if thisline[0:6].upper() == 'HEADER':
+                snapshot.trajectory.description = thisline[10:50].upper()
+
+            if thisline[0:6].upper() == 'HETATM' or thisline[0:4].upper() == 'ATOM':
+                myatom = snapshot.create_atom(Atom)
+                myatom.cart = np.array(map(float, thisline[30:54].split()))
+                myatom.element = thisline[76:78].upper()
+                myatom.name = thisline[12:16].upper()
+                if myatom.element == '':
+                    myatom.element = myatom.name
+                if myatom.element == '':
+                    print 'Atom number '+str(len(snapshot.atomlist))+' has no element type'
+
+        pdb_snapfile.close()
+
+
+
+
     def abc_to_box(self):
         '''Convert cell lengths (a, b, c) and angles (alpha, beta, gamma) into box vectors'''
         a = self.abc[0] # pylint: disable=invalid-name
