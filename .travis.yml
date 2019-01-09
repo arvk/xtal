@@ -3,6 +3,8 @@ notifications:
   email: false
 python:
   - "2.7"
+  - "3.6"
+  - "3.7"
 before_script:
   - export PYTHONPATH=$PYTHONPATH:$(pwd)
   - pip install progressbar2
