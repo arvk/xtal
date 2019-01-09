@@ -6,7 +6,7 @@ import progressbar
 class AtTraj(object):
     '''Atomic Trajectory class - Contains global definitions about the supercell and
     snapshot objects for each snapshot in the trajectory'''
-    def __init__(self):
+    def __init__(self, verbose=False):
         self.snaplist = list()
         self.box = np.ndarray([3, 3])
         self.abc = np.ndarray([1, 3])
@@ -15,7 +15,8 @@ class AtTraj(object):
         self.mat_dir_to_car = np.zeros([3, 3])
         self.mat_car_to_dir = np.zeros([3, 3])
         self.boxvolume = 0.0
-        print 'Atomic trajectory initialized'
+        if verbose:
+            print('Atomic trajectory initialized')
 
     def create_snapshot(self, snapshot):
         '''Append a new snapshot to the snapshot list'''
@@ -135,9 +136,9 @@ class AtTraj(object):
         self.description = vasp_trajfile.readline().strip()
         mymultiplier = float(vasp_trajfile.readline())
 
-        self.box[0, :] = map(float, vasp_trajfile.readline().split())
-        self.box[1, :] = map(float, vasp_trajfile.readline().split())
-        self.box[2, :] = map(float, vasp_trajfile.readline().split())
+        self.box[0, :] = list(map(float, vasp_trajfile.readline().split()))
+        self.box[1, :] = list(map(float, vasp_trajfile.readline().split()))
+        self.box[2, :] = list(map(float, vasp_trajfile.readline().split()))
         self.box = self.box * mymultiplier
 
         self.make_dircar_matrices() # Uniform representation of box dimensions from POSCAR file
@@ -146,7 +147,7 @@ class AtTraj(object):
         atarray = basisline.split()
 
         basisline = vasp_trajfile.readline()
-        atoms_of_type = map(int, basisline.split())
+        atoms_of_type = list(map(int, basisline.split()))
 
         while True:
             basisline = vasp_trajfile.readline().strip()
@@ -157,7 +158,7 @@ class AtTraj(object):
                 for thistype in range(0, numbers):  # dummy counter #pylint: disable=unused-variable
                     basisline = vasp_trajfile.readline()
                     myatom = snapshot.create_atom(Atom)
-                    myatom.fract = np.array(map(float, basisline.split()))
+                    myatom.fract = np.array(list(map(float, basisline.split())))
                     myatom.element = atarray[index].upper()
 
         self.dirtocar() # Populate cartesian values from fractional coordinates for each atom
@@ -214,9 +215,9 @@ class AtTraj(object):
         self.description = vasp_snapfile.readline().strip()
         mymultiplier = float(vasp_snapfile.readline())
 
-        self.box[0, :] = map(float, vasp_snapfile.readline().split())
-        self.box[1, :] = map(float, vasp_snapfile.readline().split())
-        self.box[2, :] = map(float, vasp_snapfile.readline().split())
+        self.box[0, :] = list(map(float, vasp_snapfile.readline().split()))
+        self.box[1, :] = list(map(float, vasp_snapfile.readline().split()))
+        self.box[2, :] = list(map(float, vasp_snapfile.readline().split()))
         self.box = self.box * mymultiplier
 
         self.make_dircar_matrices() # Uniform representation of box dimensions from POSCAR file
@@ -225,7 +226,7 @@ class AtTraj(object):
         atarray = basisline.split()
 
         basisline = vasp_snapfile.readline()
-        atoms_of_type = map(int, basisline.split())
+        atoms_of_type = list(map(int, basisline.split()))
 
         isindirectcoords = vasp_snapfile.readline().lower().strip()[0] == 'd' # Check Dir. or Cart.
 
@@ -234,7 +235,7 @@ class AtTraj(object):
                 for thistype in range(0, numbers):  # dummy counter #pylint: disable=unused-variable
                     basisline = vasp_snapfile.readline()
                     myatom = snapshot.create_atom(Atom)
-                    myatom.fract = np.array(map(float, basisline.split()))
+                    myatom.fract = np.array(list(map(float, basisline.split())))
                     myatom.element = atarray[index].upper()
             self.dirtocar() # Populate cartesian values from fractional coordinates for each atom
         else:
@@ -242,7 +243,7 @@ class AtTraj(object):
                 for thistype in range(0, numbers):
                     basisline = vasp_snapfile.readline()
                     myatom = snapshot.create_atom(Atom)
-                    myatom.cart = np.array(map(float, basisline.split()))
+                    myatom.cart = np.array(list(map(float, basisline.split())))
                     myatom.element = atarray[index].upper()
             self.cartodir() # Populate fractional coordinates from cartesian values of each atom
 
@@ -258,7 +259,7 @@ class AtTraj(object):
         # Remove first two lines
         pwp_boxfile.readline()
         pwp_boxfile.readline()
-        currline = map(float, pwp_boxfile.readline().split())
+        currline = list(map(float, pwp_boxfile.readline().split()))
         a = currline[1]*bohr_to_angstrom # pylint: disable=invalid-name
         b = currline[2]*bohr_to_angstrom # pylint: disable=invalid-name
         c = currline[3]*bohr_to_angstrom # pylint: disable=invalid-name
@@ -284,7 +285,7 @@ class AtTraj(object):
 
             thissnapshot = self.create_snapshot(Snapshot)
 
-            header = map(int, firstline.split())
+            header = list(map(int, firstline.split()))
             numelements = header[1]
 
             numatoms_per_element = list()
@@ -296,10 +297,10 @@ class AtTraj(object):
 
             numlines = int(np.ceil(numatoms/3.0))
 
-            multiplier = map(float, pwp_posfile.readline().split())
+            multiplier = list(map(float, pwp_posfile.readline().split()))
 
             for line in range(0, numlines):
-                thisline = map(float, pwp_posfile.readline().split())
+                thisline = list(map(float, pwp_posfile.readline().split()))
                 for index in range(0, 3):
                     if numatoms >= ((line*3)+index+1):
                         thisatom = thissnapshot.create_atom(Atom)
@@ -342,13 +343,13 @@ class AtTraj(object):
 
             if thisline[0:6].upper() == 'HETATM' or thisline[0:4].upper() == 'ATOM':
                 myatom = snapshot.create_atom(Atom)
-                myatom.cart = np.array(map(float, thisline[30:54].split()))
+                myatom.cart = np.array(list(map(float, thisline[30:54].split())))
                 myatom.element = thisline[76:78].strip().upper()
                 myatom.name = thisline[12:16].strip().upper()
                 if myatom.element == '':
                     myatom.element = myatom.name
                 if myatom.element == '':
-                    print 'Atom number '+str(len(snapshot.atomlist))+' has no element type'
+                    print('Atom number '+str(len(snapshot.atomlist))+' has no element type')
 
         pdb_snapfile.close()
 
@@ -637,10 +638,10 @@ class Snapshot(AtTraj):
                         found_duplicate_atom = True
 
         if not found_duplicate_atom:
-            print 'No duplicate atoms found.'
+            print('No duplicate atoms found.')
         else:
-            print num_of_removed_atoms, 'atoms removed. Atomlist size reduced from', \
-                  num_of_initial_atoms, 'to', len(self.atomlist)
+            print(num_of_removed_atoms, 'atoms removed. Atomlist size reduced from', \
+                  num_of_initial_atoms, 'to', len(self.atomlist))
 
 
     def pbc_distance(self, atom1, atom2):
