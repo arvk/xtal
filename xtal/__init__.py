@@ -3,6 +3,8 @@ import copy
 import numpy as np
 import progressbar
 
+__version__ = '0.9' # Update setup.py if the version changes
+
 class AtTraj(object):
     '''Atomic Trajectory class - Contains global definitions about the supercell and
     snapshot objects for each snapshot in the trajectory'''
