@@ -87,12 +87,12 @@ class AtTraj(object):
 
     def write_trajectory_vasp(self, filename):
         '''Write out positions of atoms in the trajectory in the VASP XDATCAR format'''
-        vasp_trajfile = open(filename, 'w')
+        vasp_trajfile = open(filename, 'wb')
         if self.description == '':
-            vasp_trajfile.write('Produced by xtal\n')
+            vasp_trajfile.write('Produced by xtal\n'.encode())
         else:
-            vasp_trajfile.write(self.description+'\n')
-        vasp_trajfile.write('1.000000\n') # Default multiplier for all VASP files
+            vasp_trajfile.write((self.description+'\n').encode())
+        vasp_trajfile.write('1.000000\n'.encode()) # Default multiplier for all VASP files
         np.savetxt(vasp_trajfile, self.box, fmt='%19.16f', delimiter='   ', newline='\n')
 
         # Sort atoms by element before counting number of atoms by element
@@ -112,11 +112,11 @@ class AtTraj(object):
         uniqueslist = uniquesdict.values()
         uniqueslist1 = uniquesdict1.values()
 
-        vasp_trajfile.write('  '.join(uniqueslist1).title()+'\n')
-        vasp_trajfile.write('  '.join(uniqueslist)+'\n')
+        vasp_trajfile.write(('  '.join(uniqueslist1).title()+'\n').encode())
+        vasp_trajfile.write(('  '.join(uniqueslist)+'\n').encode())
 
         for snapshot_id, snapshot in enumerate(self.snaplist):
-            vasp_trajfile.write('Direct configuration= '+str(snapshot_id+1)+'\n')
+            vasp_trajfile.write(('Direct configuration= '+str(snapshot_id+1)+'\n').encode())
             for uniqueelement in uniqueslist1:
                 subsetofatomlist = (atoms for atoms in snapshot.atomlist \
                                     if atoms.element == uniqueelement)
@@ -523,12 +523,12 @@ class Snapshot(AtTraj):
 
     def write_snapshot_vasp(self, filename, write_in_direct):
         '''Write out positions of atoms in the current snapshot in the VASP POSCAR format'''
-        vasp_snapfile = open(filename, 'w')
+        vasp_snapfile = open(filename, 'wb')
         if self.trajectory.description == '':
-            vasp_snapfile.write('Produced by xtal\n')
+            vasp_snapfile.write('Produced by xtal\n'.encode())
         else:
-            vasp_snapfile.write(self.trajectory.description+'\n')
-        vasp_snapfile.write('1.000000\n') # Default multiplier for all VASP files
+            vasp_snapfile.write((self.trajectory.description+'\n').encode())
+        vasp_snapfile.write('1.000000\n'.encode()) # Default multiplier for all VASP files
         np.savetxt(vasp_snapfile, self.trajectory.box, fmt='%19.16f', delimiter='   ', newline='\n')
 
         # Sort atoms by element before counting number of atoms by element
@@ -547,11 +547,11 @@ class Snapshot(AtTraj):
         uniqueslist = uniquesdict.values()
         uniqueslist1 = uniquesdict1.values()
 
-        vasp_snapfile.write('  '.join(uniqueslist1).title()+'\n')
-        vasp_snapfile.write('  '.join(uniqueslist)+'\n')
+        vasp_snapfile.write(('  '.join(uniqueslist1).title()+'\n').encode())
+        vasp_snapfile.write(('  '.join(uniqueslist)+'\n').encode())
 
         if write_in_direct:
-            vasp_snapfile.write('Direct\n')
+            vasp_snapfile.write('Direct\n'.encode())
             for uniqueelement in uniqueslist1:
                 subsetofatomlist = (atoms for atoms in self.atomlist \
                                     if atoms.element == uniqueelement)
@@ -559,7 +559,7 @@ class Snapshot(AtTraj):
                     np.savetxt(vasp_snapfile, singleatom.fract[None],
                                fmt='%19.16f', delimiter='   ', newline='\n ')
         else:
-            vasp_snapfile.write('Cartesian\n')
+            vasp_snapfile.write('Cartesian\n'.encode())
             for uniqueelement in uniqueslist1:
                 subsetofatomlist = (atoms for atoms in self.atomlist
                                     if atoms.element == uniqueelement)
