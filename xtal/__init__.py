@@ -674,6 +674,7 @@ class Atom(Snapshot):
         self.snapshot = snapshot
 
     element = ''
+    charge = 0.0
     fract = np.ndarray((1, 3))
     cart = np.ndarray((1, 3))
 
