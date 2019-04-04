@@ -463,11 +463,15 @@ class AtTraj(object):
 
 class Snapshot(AtTraj):
     '''Snapshot class - Contains atom objects for each atom in the snapshot'''
-    description = ''
 
     def __init__(self, trajectory): #pylint: disable=super-init-not-called
         self.trajectory = trajectory
         self.atomlist = list()
+        self.description = ''
+        self.timestep = None
+        self.energy = None
+        self.pressure = None
+        self.temperature = None
 
     def create_atom(self, atom):
         '''Create a new Atom instance and append to current snapshot'''
