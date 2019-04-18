@@ -170,42 +170,87 @@ class AtTraj(object):
 
 
 
-    # def read_snapshot_lammps(self, filename):
-    #     lammps_snapfile = open(filename, 'r')
-    #     lammps_snapfile.readline() # Comment line for Timestep
-    #     self.stepcount = int(lammps_snapfile.readline().strip())
+    def read_snapshot_lammps(self, filename):
+        lammps_snapfile = open(filename, 'r')
+        lammps_snapfile.readline() # Comment line for Timestep
+        self.stepcount = int(lammps_snapfile.readline().strip())
 
-    #     lammps_snapfile.readline() # Comment line for Atom Count
-    #     atomcount = int(lammps_snapfile.readline().strip())
+        lammps_snapfile.readline() # Comment line for Atom Count
+        atomcount = int(lammps_snapfile.readline().strip())
 
-    #     lammps_snapfile.readline() # Comment line for box bounds
-    #     xlo_bound, xhi_bound, xy = map(float, lammps_snapfile.readline().split())
-    #     ylo_bound, yhi_bound, xz = map(float, lammps_snapfile.readline().split())
-    #     zlo_bound, zhi_bound, yz = map(float, lammps_snapfile.readline().split())
+        lammps_snapfile.readline() # Comment line for box bounds
+        xlo_bound, xhi_bound, xy = map(float, lammps_snapfile.readline().split())
+        ylo_bound, yhi_bound, xz = map(float, lammps_snapfile.readline().split())
+        zlo_bound, zhi_bound, yz = map(float, lammps_snapfile.readline().split())
 
-    #     xlo = xlo_bound - min(0.0, xy, xz, xy+xz)
-    #     xhi = xhi_bound - max(0.0, xy, xz, xy+xz)
-    #     ylo = ylo_bound - min(0.0, yz)
-    #     yhi = yhi_bound - max(0.0, yz)
-    #     zlo = zlo_bound
-    #     zhi = zhi_bound
+        xlo = xlo_bound - min(0.0, xy, xz, xy+xz)
+        xhi = xhi_bound - max(0.0, xy, xz, xy+xz)
+        ylo = ylo_bound - min(0.0, yz)
+        yhi = yhi_bound - max(0.0, yz)
+        zlo = zlo_bound
+        zhi = zhi_bound
 
-    #     self.box[0, :] = [xhi-xlo, 0.0, 0.0]
-    #     self.box[1, :] = [xy, yhi-ylo, 0.0]
-    #     self.box[2, :] = [xz, yz, zhi-zlo]
+        self.box[0, :] = [xhi-xlo, 0.0, 0.0]
+        self.box[1, :] = [xy, yhi-ylo, 0.0]
+        self.box[2, :] = [xz, yz, zhi-zlo]
 
-    #     self.make_dircar_matrices() # Uniform representation of box dimensions
+        self.make_dircar_matrices() # Uniform representation of box dimensions
 
-    #     lammps_snapfile.readline() # Comment line for Atom positions
-    #     for thisatomcount in range(0, atomcount):
-    #         basisline = lammps_snapfile.readline()
-    #         myatom = Atom()
-    #         myatom.element, myatom.cart = [basisline.split()[0],
-    #                                        np.array(map(float, basisline.split()[1:4]))]
-    #         self.atomlist.append(myatom)
-    #     self.cartodir()
+        lammps_snapfile.readline() # Comment line for Atom positions
+        for thisatomcount in range(0, atomcount):
+            basisline = lammps_snapfile.readline()
+            myatom = Atom()
+            myatom.element, myatom.cart = [basisline.split()[0],
+                                           np.array(map(float, basisline.split()[1:4]))]
+            self.atomlist.append(myatom)
+        self.cartodir()
 
-    #     lammps_snapfile.close()
+        lammps_snapfile.close()
+
+
+
+    def read_trajectory_lammps(self, filename):
+        lammps_snapfile = open(filename, 'r')
+        while True:
+            test_line = lammps_snapfile.readline() # Comment line for Timestep
+            if test_line == '':
+                break
+            else:
+                this_snapshot = self.create_snapshot(Snapshot)
+
+            self.stepcount = int(lammps_snapfile.readline().strip())
+
+            lammps_snapfile.readline() # Comment line for Atom Count
+            atomcount = int(lammps_snapfile.readline().strip())
+
+            lammps_snapfile.readline() # Comment line for box bounds
+            xlo_bound, xhi_bound = map(float, lammps_snapfile.readline().split())
+            ylo_bound, yhi_bound = map(float, lammps_snapfile.readline().split())
+            zlo_bound, zhi_bound = map(float, lammps_snapfile.readline().split())
+
+            xlo = xlo_bound
+            xhi = xhi_bound
+            ylo = ylo_bound
+            yhi = yhi_bound
+            zlo = zlo_bound
+            zhi = zhi_bound
+
+            self.box[0, :] = [xhi-xlo, 0.0, 0.0]
+            self.box[1, :] = [0.0, yhi-ylo, 0.0]
+            self.box[2, :] = [0.0, 0.0, zhi-zlo]
+
+            self.make_dircar_matrices() # Uniform representation of box dimensions
+
+            lammps_snapfile.readline() # Comment line for Atom positions
+            for thisatomcount in range(0, atomcount):
+                basisline = lammps_snapfile.readline()
+                myatom = this_snapshot.create_atom(Atom)
+                myatom.element, myatom.cart, myatom.force = [basisline.split()[1],
+                                            np.array(list(map(float, basisline.split()[2:5]))),
+                                            np.array(list(map(float, basisline.split()[5:8])))]
+            self.cartodir()
+
+        lammps_snapfile.close()
 
 
     def read_snapshot_vasp(self, filename):
@@ -668,7 +713,25 @@ class Snapshot(AtTraj):
         mindist = np.linalg.norm(mindist_cart_vec)
         return mindist
 
+    def pbc_distance_vector(self, atom1, atom2):
+        '''Calculate minimum distance between two atoms assuming PBC'''
+        atom1.fract = atom1.fract - np.floor(atom2.fract)
+        atom2.fract = atom2.fract - np.floor(atom2.fract)
+        diff0 = atom2.fract - atom1.fract
+        diff1 = diff0 + 1
+        diff2 = diff0 - 1
+        diff0 = np.append([diff0], [diff1], axis=0)
+        diff0 = np.append(diff0, [diff2], axis=0)
+        diff = []
+        diff.append(sorted(diff0[:, 0], key=abs)[0])
+        diff.append(sorted(diff0[:, 1], key=abs)[0])
+        diff.append(sorted(diff0[:, 2], key=abs)[0])
+        mindist_fract_vec = np.array(diff)
+        mindist_cart_vec = np.dot(np.matrix.transpose(self.trajectory.box), mindist_fract_vec) #pylint: disable=no-member
+        return mindist_cart_vec
 
+
+        
 #--------------------------------------------------
 
 
@@ -681,6 +744,7 @@ class Atom(Snapshot):
     charge = 0.0
     fract = np.ndarray((1, 3))
     cart = np.ndarray((1, 3))
+    force = np.ndarray((1, 3))
 
     def dirtocar(self):
         '''Convert current atom to cartesian coordinates'''
