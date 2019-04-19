@@ -245,9 +245,10 @@ class AtTraj(object):
             for thisatomcount in range(0, atomcount):
                 basisline = lammps_snapfile.readline()
                 myatom = this_snapshot.create_atom(Atom)
-                myatom.element, myatom.cart, myatom.force = [basisline.split()[1],
+                myatom.element, myatom.cart, myatom.force, myatom.vel = [basisline.split()[1],
                                             np.array(list(map(float, basisline.split()[2:5]))),
-                                            np.array(list(map(float, basisline.split()[5:8])))]
+                                            np.array(list(map(float, basisline.split()[5:8]))),
+                                            np.array(list(map(float, basisline.split()[8:11])))]
             self.cartodir()
 
         lammps_snapfile.close()
@@ -731,7 +732,7 @@ class Snapshot(AtTraj):
         return mindist_cart_vec
 
 
-        
+
 #--------------------------------------------------
 
 
@@ -745,6 +746,7 @@ class Atom(Snapshot):
     fract = np.ndarray((1, 3))
     cart = np.ndarray((1, 3))
     force = np.ndarray((1, 3))
+    vel = np.ndarray((1, 3))
 
     def dirtocar(self):
         '''Convert current atom to cartesian coordinates'''
