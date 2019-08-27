@@ -182,8 +182,7 @@ class AtTraj(object):
                 if info.attrib['name']=='e_0_energy':
                     snapshot.energy = float(info.text)
 
-        print(elements)
-        print(self.box)
+
 
 
     def read_trajectory_vasp_xdatcar(self, filename):
