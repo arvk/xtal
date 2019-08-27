@@ -2,6 +2,7 @@
 import copy
 import numpy as np
 import progressbar
+import xml.etree.cElementTree as ET
 
 __version__ = '0.9.1' # Update setup.py if the version changes
 
@@ -129,8 +130,63 @@ class AtTraj(object):
         vasp_trajfile.close()
 
 
-
     def read_trajectory_vasp(self, filename):
+        '''Read new VASP trajectory from XDATCAR or XML file. This is just a wrapper function that calls the corresponding XDATCAR or XML reader'''
+        if '.xml' in filename:
+            self.read_trajectory_vasp_xml(filename)
+        else:
+            self.read_trajectory_vasp_xdatcar(filename)
+
+
+
+    def read_trajectory_vasp_xml(self, filename):
+        '''Read new VASP trajectory from XML file'''
+
+        vasp_trajfile = ET.parse(filename)
+        root = vasp_trajfile.getroot()
+
+        elements = []
+        # Get atomic structure
+        for tag in root.find('atominfo').find('array').find('set').findall('rc'):
+            elements.append(tag.find('c').text.strip().upper())
+
+        # Read structure
+        for tag in root.findall('calculation'):
+            snapshot = self.create_snapshot(Snapshot)
+
+            # Read positions
+            subtag = tag.findall('structure')[-1]
+            for posarray in subtag.findall('varray'):
+                if posarray.attrib['name']=='positions':
+                    for atomID, atompos in enumerate(posarray.findall('v')):
+                        atom = snapshot.create_atom(Atom)
+                        atom.fract = np.array(list(map(float, atompos.text.strip().split())))
+                        atom.element = elements[atomID]
+
+            # Read forces
+            for subtag in tag.findall('varray'):
+                if subtag.attrib['name']=='forces':
+                    for atomID, atomforce in enumerate(subtag.findall('v')):
+                        snapshot.atomlist[atomID].force = np.array(list(map(float, atomforce.text.strip().split())))
+
+            # Read box
+            for subtag in tag.findall('structure')[-1].find('crystal').findall('varray'):
+                if subtag.attrib['name']=='basis':
+                    for index, boxline in enumerate(subtag.findall('v')):
+                        self.box[index, :] = list(map(float, boxline.text.strip().split()))
+                    self.box = np.array(self.box)
+
+            # Read energy
+            subtag = tag.findall('scstep')[-1].find('energy')
+            for info in subtag.findall('i'):
+                if info.attrib['name']=='e_0_energy':
+                    snapshot.energy = float(info.text)
+
+        print(elements)
+        print(self.box)
+
+
+    def read_trajectory_vasp_xdatcar(self, filename):
         '''Read new VASP snapshot from file and append to current trajectory'''
 
         vasp_trajfile = open(filename, 'r')
