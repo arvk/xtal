@@ -1,10 +1,9 @@
 '''xtal is an umbrella package for various tools used to manipulate atomic trajectories'''
 import copy
 import numpy as np
-import progressbar
 import xml.etree.cElementTree as ET
 
-__version__ = '0.9.1' # Update setup.py if the version changes
+__version__ = '0.9.2' # Update setup.py if the version changes
 
 class AtTraj(object):
     '''Atomic Trajectory class - Contains global definitions about the supercell and
@@ -69,8 +68,7 @@ class AtTraj(object):
 
     def make_periodic(self, num_of_images):
         '''Create periodic images all snapshots of current simulation cell'''
-        newprogressbar = progressbar.ProgressBar()
-        for snapshot in newprogressbar(self.snaplist):
+        for snapshot in self.snaplist:
             snapshot.make_periodic(num_of_images)
 
         # Adjust the box sizes and recompile transformation matrices
