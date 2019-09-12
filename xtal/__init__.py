@@ -2,6 +2,8 @@
 import copy
 import numpy as np
 import xml.etree.cElementTree as ET
+import glob
+import os
 
 __version__ = '0.9.2' # Update setup.py if the version changes
 
@@ -132,6 +134,13 @@ class AtTraj(object):
         '''Read new VASP trajectory from XDATCAR or XML file. This is just a wrapper function that calls the corresponding XDATCAR or XML reader'''
         if '.xml' in filename:
             self.read_trajectory_vasp_xml(filename)
+        elif os.path.isdir(filename):
+            string = '**/'+filename+'/*.xml'
+            print(string)
+            xmlfilelist = glob.glob(filename+'/**/*.xml', recursive = True)
+            for xmlfile in xmlfilelist:
+                print(xmlfile)
+                self.read_trajectory_vasp_xml(xmlfile)
         else:
             self.read_trajectory_vasp_xdatcar(filename)
 
