@@ -465,6 +465,39 @@ class AtTraj(object):
 
 
 
+    def unwrap_trajectory(self):
+        '''Unwrap movement of atoms across the PBC boundary'''
+
+        # Setting the reference as frame 0
+        self.make_dircar_matrices()
+        self.snaplist[0].dirtocar()
+        cartref = np.array([atom.cart for atom in self.snaplist[0].atomlist])
+        fractref = np.array([atom.fract for atom in self.snaplist[0].atomlist])
+
+        # Construct other frames in reference to their previous frame
+        for snapID in range(1,len(self.snaplist)):
+            curfract = [atom.fract for atom in self.snaplist[snapID].atomlist]
+
+            diff1 = np.array(curfract)-np.array(fractref)
+            diff2 = np.mod(diff1,0.5)
+            diff3 = np.mod(diff1,-0.5)
+
+            final = [[min([diff1[atom,0], diff2[atom,0], diff3[atom,0]], key=abs),
+                      min([diff1[atom,1], diff2[atom,1], diff3[atom,1]], key=abs),
+                      min([diff1[atom,2], diff2[atom,2], diff3[atom,2]], key=abs)]
+                     for atom in range(len(diff1))]
+
+            deltacart = np.dot(final, self.box)
+            # New cartesian positions derived from previous step + delta
+            cartref += np.array(deltacart)
+            fractref = curfract
+
+            # Assign unwrapped cartesian positions to atom objects
+            for atomID in range(len(self.snaplist[snapID].atomlist)):
+                self.snaplist[snapID].atomlist[atomID].cart = np.array(cartref[atomID])
+
+
+
 
     def abc_to_box(self):
         '''Convert cell lengths (a, b, c) and angles (alpha, beta, gamma) into box vectors'''
