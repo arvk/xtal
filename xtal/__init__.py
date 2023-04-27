@@ -156,7 +156,7 @@ class AtTraj(object):
         elements = []
         # Get atomic structure
         for tag in root.find('atominfo').find('array').find('set').findall('rc'):
-            elements.append(tag.find('c').text.strip().upper())
+            elements.append(tag.find('c').text.strip().title())
 
         # Read structure
         for tag in root.findall('calculation'):
@@ -455,8 +455,9 @@ class AtTraj(object):
             if thisline[0:6].upper() == 'HETATM' or thisline[0:4].upper() == 'ATOM':
                 myatom = snapshot.create_atom(Atom)
                 myatom.cart = np.array(list(map(float, thisline[30:54].split())))
-                myatom.element = thisline[76:78].strip().upper()
-                myatom.name = thisline[12:16].strip().upper()
+                myatom.element = thisline[76:78].strip().title()
+                myatom.name = thisline[12:16].strip().title()
+                # TODO -- UPDATE THE NEXT 4 LINES
                 if myatom.element == '':
                     myatom.element = myatom.name
                 if myatom.element == '':
