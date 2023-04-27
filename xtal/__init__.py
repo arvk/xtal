@@ -638,9 +638,14 @@ class Snapshot(AtTraj):
             atom.rotate(center, angle)
 
     def rotate3D(self, center, angle_z, angle_y, angle_x):
-        '''Rotate all atoms in the snapshot by given angle about given center'''
+        '''Rotate all atoms in the snapshot by given euler angles about given center'''
         for atom in self.atomlist:
             atom.rotate3D(center, angle_z, angle_y, angle_x)
+
+    def rotate_axis_angle(self, center, axis, angle):
+        '''Rotate all atoms in the snapshot by given angle about given center and axis'''
+        for atom in self.atomlist:
+            atom.rotate_axis_angle(center, axis, angle)
 
     def move(self, vector):
         '''Move all atoms in the snapshot by given cartesian vector'''
@@ -900,6 +905,29 @@ class Atom(Snapshot):
         q1 = (np.sin(angle_x/2.0)*np.cos(angle_y/2)*np.cos(angle_z/2)) - (np.cos(angle_x/2.0)*np.sin(angle_y/2)*np.sin(angle_z/2))
         q2 = (np.cos(angle_x/2.0)*np.sin(angle_y/2)*np.cos(angle_z/2)) + (np.sin(angle_x/2.0)*np.cos(angle_y/2)*np.sin(angle_z/2))
         q3 = (np.cos(angle_x/2.0)*np.cos(angle_y/2)*np.sin(angle_z/2)) - (np.sin(angle_x/2.0)*np.sin(angle_y/2)*np.cos(angle_z/2))
+        rotation_quaternion = np.array([q0,q1,q2,q3])
+        rotation_quaternion_inverse = q_inv(rotation_quaternion)
+
+        # Active rotation: p' = q^-1 p q
+        # p' = rotated point
+        # p = original point
+        # q = rotation quaternion
+
+        recentered = self.cart - center
+        p_temp = q_multiply(vector_to_quaternion(recentered),rotation_quaternion)
+        p_dash = q_multiply(rotation_quaternion_inverse, p_temp)
+
+        finalpos = quaternion_to_vector(p_dash) + center
+        self.cart = finalpos
+
+
+    def rotate_axis_angle(self, center, axis, angle):
+        '''Rotate current atom about a center and an axis by given angle'''
+        axis = axis / np.linalg.norm(axis) # unit axis vector
+        q0 = np.cos(angle/2.0)
+        q1 = axis[0]*np.sin(angle/2.0)
+        q2 = axis[1]*np.sin(angle/2.0)
+        q3 = axis[2]*np.sin(angle/2.0)
         rotation_quaternion = np.array([q0,q1,q2,q3])
         rotation_quaternion_inverse = q_inv(rotation_quaternion)
 
