@@ -4,6 +4,7 @@ import numpy as np
 import xml.etree.cElementTree as ET
 import glob
 import os
+from utils import *
 
 __version__ = '0.9.2' # Update setup.py if the version changes
 
@@ -344,17 +345,17 @@ class AtTraj(object):
             for index, numbers in enumerate(atoms_of_type):
                 for thistype in range(0, numbers):  # dummy counter #pylint: disable=unused-variable
                     basisline = vasp_snapfile.readline()
-                    myatom = snapshot.create_atom(Atom)
-                    myatom.fract = np.array(list(map(float, basisline.split())))
-                    myatom.element = atarray[index].upper()
+                    fract = np.array(list(map(float, basisline.split())))
+                    element = atarray[index].title()
+                    myatom = snapshot.create_atom(Atom,fract=fract,element=element)
             self.dirtocar() # Populate cartesian values from fractional coordinates for each atom
         else:
             for index, numbers in enumerate(atoms_of_type):
                 for thistype in range(0, numbers):
                     basisline = vasp_snapfile.readline()
-                    myatom = snapshot.create_atom(Atom)
-                    myatom.cart = np.array(list(map(float, basisline.split())))
-                    myatom.element = atarray[index].upper()
+                    cart = np.array(list(map(float, basisline.split())))
+                    element = atarray[index].title()
+                    myatom = snapshot.create_atom(Atom,cart=cart,element=element)
             self.cartodir() # Populate fractional coordinates from cartesian values of each atom
 
         vasp_snapfile.close()
@@ -614,9 +615,9 @@ class Snapshot(AtTraj):
         self.pressure = None
         self.temperature = None
 
-    def create_atom(self, atom):
+    def create_atom(self, atom,element=None,fract=None,cart=None,force=None,vel=None):
         '''Create a new Atom instance and append to current snapshot'''
-        newatom = atom(self)
+        newatom = atom(self,element=element,fract=fract,cart=cart,force=force,vel=vel)
         self.atomlist.append(newatom)
         return newatom
 
@@ -830,19 +831,35 @@ class Snapshot(AtTraj):
 
 #--------------------------------------------------
 
-
 class Atom(Snapshot):
     '''Atom class - Contains atom positions (cartesian or scaled) and element type'''
-    def __init__(self, snapshot): #pylint: disable=super-init-not-called
+    def __init__(self, snapshot,element=None,fract=None,cart=None,force=None,vel=None): #pylint: disable=super-init-not-called
         self.snapshot = snapshot
+        if element is None:
+            self.element = 'X'
+        else:
+            self.element = element.title()
+        self.mass = chem_ref.symbol(self.element).mass
 
-    element = ''
-    charge = 0.0
-    mass = 0.0
-    fract = np.ndarray((1, 3))
-    cart = np.ndarray((1, 3))
-    force = np.ndarray((1, 3))
-    vel = np.ndarray((1, 3))
+        if fract is None:
+            self.fract = np.ndarray((1, 3))
+        else:
+            self.fract = np.array(fract)
+
+        if cart is None:
+            self.cart = np.ndarray((1, 3))
+        else:
+            self.cart = np.array(cart)
+
+        if force is None:
+            self.force = np.ndarray((1, 3))
+        else:
+            self.force = np.array(force)
+
+        if vel is None:
+            self.vel = np.ndarray((1, 3))
+        else:
+            self.vel = np.array(vel)
 
     def dirtocar(self):
         '''Convert current atom to cartesian coordinates'''
@@ -878,29 +895,3 @@ class Atom(Snapshot):
 
 
 #--------------------------------------------------
-
-
-
-def is_sierpinski_carpet_filled(level, coords):
-    '''Calculate if the given fractional coordinates correspond to a filed pixel
-    in the Sierpinksi carpet fractal of a given level
-
-    Multiply the fractional coordinate with 3^n (for n = level..1) and check to see
-    if it leaves a reminder of 1 upon division by 3 (i.e. it is the middle cell at any level)'''
-
-    multiplier = 3**level
-
-    x = int(coords[0]*multiplier) # pylint: disable=invalid-name
-    y = int(coords[1]*multiplier) # pylint: disable=invalid-name
-
-    while True:
-        if x == 0 and y == 0:
-            break
-
-        if x%3 == 1 and y%3 == 1:
-            return False
-
-        x = int(x/3) # pylint: disable=invalid-name
-        y = int(y/3) # pylint: disable=invalid-name
-
-    return True
