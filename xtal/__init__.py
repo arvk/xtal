@@ -637,6 +637,11 @@ class Snapshot(AtTraj):
         for atom in self.atomlist:
             atom.rotate(center, angle)
 
+    def rotate3D(self, center, angle_z, angle_y, angle_x):
+        '''Rotate all atoms in the snapshot by given angle about given center'''
+        for atom in self.atomlist:
+            atom.rotate3D(center, angle_z, angle_y, angle_x)
+
     def move(self, vector):
         '''Move all atoms in the snapshot by given cartesian vector'''
         for atom in self.atomlist:
@@ -888,6 +893,28 @@ class Atom(Snapshot):
         finalpos = rotated + center
         self.cart[0] = finalpos[0]
         self.cart[1] = finalpos[1]
+
+    def rotate3D(self, center, angle_z, angle_y, angle_x):
+        '''Rotate current atom by given x/y/z angles about given center'''
+        q0 = (np.cos(angle_x/2.0)*np.cos(angle_y/2)*np.cos(angle_z/2)) + (np.sin(angle_x/2.0)*np.sin(angle_y/2)*np.sin(angle_z/2))
+        q1 = (np.sin(angle_x/2.0)*np.cos(angle_y/2)*np.cos(angle_z/2)) - (np.cos(angle_x/2.0)*np.sin(angle_y/2)*np.sin(angle_z/2))
+        q2 = (np.cos(angle_x/2.0)*np.sin(angle_y/2)*np.cos(angle_z/2)) + (np.sin(angle_x/2.0)*np.cos(angle_y/2)*np.sin(angle_z/2))
+        q3 = (np.cos(angle_x/2.0)*np.cos(angle_y/2)*np.sin(angle_z/2)) - (np.sin(angle_x/2.0)*np.sin(angle_y/2)*np.cos(angle_z/2))
+        rotation_quaternion = np.array([q0,q1,q2,q3])
+        rotation_quaternion_inverse = q_inv(rotation_quaternion)
+
+        # Active rotation: p' = q^-1 p q
+        # p' = rotated point
+        # p = original point
+        # q = rotation quaternion
+
+        recentered = self.cart - center
+        p_temp = q_multiply(vector_to_quaternion(recentered),rotation_quaternion)
+        p_dash = q_multiply(rotation_quaternion_inverse, p_temp)
+
+        finalpos = quaternion_to_vector(p_dash) + center
+        self.cart = finalpos
+
 
     def inbox(self):
         '''Fold atom position to lie within the simulation cell assuming PBC'''

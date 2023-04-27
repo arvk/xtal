@@ -1,5 +1,6 @@
 from periodictable import core, mass, density
 import copy
+import numpy as np
 
 chem_ref = core.PeriodicTable(table="X")
 mass.init(chem_ref)
@@ -36,3 +37,22 @@ def is_sierpinski_carpet_filled(level, coords):
         y = int(y/3) # pylint: disable=invalid-name
 
     return True
+
+
+def vector_to_quaternion(vector):
+    return np.array([0.0,vector[0],vector[1],vector[2]])
+
+def quaternion_to_vector(q):
+    return np.array(q[1:])
+
+def q_multiply(q1,q2):
+    '''Quaternion multiplication. Returns product of two input quaternions'''
+    t0 = (q1[0]*q2[0]) - (q1[1]*q2[1]) - (q1[2]*q2[2]) - (q1[3]*q2[3])
+    t1 = (q1[0]*q2[1]) + (q1[1]*q2[0]) - (q1[2]*q2[3]) + (q1[3]*q2[2])
+    t2 = (q1[0]*q2[2]) + (q1[1]*q2[3]) + (q1[2]*q2[0]) - (q1[3]*q2[1])
+    t3 = (q1[0]*q2[3]) - (q1[1]*q2[2]) + (q1[2]*q2[1]) + (q1[3]*q2[0])
+    return np.array([t0,t1,t2,t3])
+
+def q_inv(q):
+    '''Quaternion inverse. Returns inverse of an input quaternion'''
+    return np.array([q[0],-q[1],-q[2],-q[3]])
