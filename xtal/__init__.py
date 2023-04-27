@@ -167,9 +167,9 @@ class AtTraj(object):
             for posarray in subtag.findall('varray'):
                 if posarray.attrib['name']=='positions':
                     for atomID, atompos in enumerate(posarray.findall('v')):
-                        atom = snapshot.create_atom(Atom)
-                        atom.fract = np.array(list(map(float, atompos.text.strip().split())))
-                        atom.element = elements[atomID]
+                        fract = np.array(list(map(float, atompos.text.strip().split())))
+                        element = elements[atomID].title()
+                        atom = snapshot.create_atom(Atom,fract=fract,element=element)
 
             # Read forces
             for subtag in tag.findall('varray'):
@@ -222,9 +222,9 @@ class AtTraj(object):
             for index, numbers in enumerate(atoms_of_type):
                 for thistype in range(0, numbers):  # dummy counter #pylint: disable=unused-variable
                     basisline = vasp_trajfile.readline()
-                    myatom = snapshot.create_atom(Atom)
-                    myatom.fract = np.array(list(map(float, basisline.split())))
-                    myatom.element = atarray[index].upper()
+                    fract = np.array(list(map(float, basisline.split())))
+                    element = atarray[index].title()
+                    myatom = snapshot.create_atom(Atom,fract=fract,element=element)
 
         self.dirtocar() # Populate cartesian values from fractional coordinates for each atom
 
@@ -307,11 +307,11 @@ class AtTraj(object):
             lammps_snapfile.readline() # Comment line for Atom positions
             for thisatomcount in range(0, atomcount):
                 basisline = lammps_snapfile.readline()
-                myatom = this_snapshot.create_atom(Atom)
-                myatom.element, myatom.cart, myatom.force, myatom.vel = [basisline.split()[1],
+                element, cart, force, vel = [basisline.split()[1].title(),
                                             np.array(list(map(float, basisline.split()[2:5]))),
                                             np.array(list(map(float, basisline.split()[5:8]))),
                                             np.array(list(map(float, basisline.split()[8:11])))]
+                myatom = this_snapshot.create_atom(Atom,element=element,cart=cart,force=force,vel=vel)
             self.cartodir()
 
         lammps_snapfile.close()
@@ -414,11 +414,11 @@ class AtTraj(object):
                 thisline = list(map(float, pwp_posfile.readline().split()))
                 for index in range(0, 3):
                     if numatoms >= ((line*3)+index+1):
-                        thisatom = thissnapshot.create_atom(Atom)
-                        thisatom.fract = np.array([thisline[(index*3)+0],
+                        fract = np.array([thisline[(index*3)+0],
                                                    thisline[(index*3)+1],
                                                    thisline[(index*3)+2]])
-                        thisatom.fract = thisatom.fract * multiplier
+                        fract = fract * multiplier
+                        thisatom = thissnapshot.create_atom(Atom,fract=fract)
 
             atomindex = 0
             for element in range(0, numelements):
