@@ -31,8 +31,8 @@ class TestVASP(object):
         u.snaplist[0].write_snapshot_vasp('tests/POSCAR',False)
         v = xtal.AtTraj()
         v.read_snapshot_vasp('tests/POSCAR')
-        u_mo_atoms = [atom for atom in u.snaplist[0].atomlist if atom.element == "MO"]
-        v_mo_atoms = [atom for atom in v.snaplist[0].atomlist if atom.element == "MO"]
+        u_mo_atoms = [atom for atom in u.snaplist[0].atomlist if atom.element == "Mo"]
+        v_mo_atoms = [atom for atom in v.snaplist[0].atomlist if atom.element == "Mo"]
         assert np.linalg.norm(u_mo_atoms[0].cart - v_mo_atoms[0].cart) < 0.0001
         os.remove('tests/POSCAR')
 
@@ -43,8 +43,8 @@ class TestVASP(object):
         u.snaplist[0].write_snapshot_vasp('tests/POSCAR',True)
         v = xtal.AtTraj()
         v.read_snapshot_vasp('tests/POSCAR')
-        u_mo_atoms = [atom for atom in u.snaplist[0].atomlist if atom.element == "MO"]
-        v_mo_atoms = [atom for atom in v.snaplist[0].atomlist if atom.element == "MO"]
+        u_mo_atoms = [atom for atom in u.snaplist[0].atomlist if atom.element == "Mo"]
+        v_mo_atoms = [atom for atom in v.snaplist[0].atomlist if atom.element == "Mo"]
         assert np.linalg.norm(u_mo_atoms[0].fract - v_mo_atoms[0].fract) < 0.0001
         os.remove('tests/POSCAR')
 
@@ -68,9 +68,9 @@ class TestGeneral(object):
         """Test if trajectory elements can be remapped"""
         u = xtal.AtTraj()
         u.read_snapshot_vasp('tests/POSCAR.VASP5.unitcell')
-        u.remap_id('S','TE')
+        u.remap_id('S','Te')
         no_S_atoms = len([atom for atom in u.snaplist[0].atomlist if atom.element == 'S'])
-        no_Te_atoms = len([atom for atom in u.snaplist[0].atomlist if atom.element == 'TE'])
+        no_Te_atoms = len([atom for atom in u.snaplist[0].atomlist if atom.element == 'Te'])
         assert (no_S_atoms, no_Te_atoms) == (0,2)
 
     def test_pbc_distance(self):
@@ -126,7 +126,7 @@ class TestGeneral(object):
         u.read_snapshot_vasp('tests/POSCAR.VASP5.unitcell')
         u.dirtocar()
         snapshot = u.snaplist[0]
-        mo_atom = [atom for atom in snapshot.atomlist if atom.element == "MO"][0]
+        mo_atom = [atom for atom in snapshot.atomlist if atom.element == "Mo"][0]
         s_atom_top = [atom for atom in snapshot.atomlist if atom.fract[2] > 0.15][0]
         s_atom_bottom = [atom for atom in snapshot.atomlist if atom.fract[2] < 0.1][0]
 
