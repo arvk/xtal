@@ -8,6 +8,8 @@ from utils import *
 
 __version__ = '0.9.2' # Update setup.py if the version changes
 
+# pylint: disable=line-too-long
+
 class AtTraj(object):
     '''Atomic Trajectory class - Contains global definitions about the supercell and
     snapshot objects for each snapshot in the trajectory'''
@@ -25,9 +27,9 @@ class AtTraj(object):
 
     def create_snapshot(self, snapshot):
         '''Append a new snapshot to the snapshot list'''
-        newsnapshot = snapshot(self)
-        self.snaplist.append(newsnapshot)
-        return newsnapshot
+        new_snapshot = snapshot(self)
+        self.snaplist.append(new_snapshot)
+        return new_snapshot
 
     def dirtocar(self):
         '''Convert all atoms in trajectory to cartesian coordinates'''
@@ -901,11 +903,11 @@ class Atom(Snapshot):
 
     def rotate3D(self, center, angle_z, angle_y, angle_x):
         '''Rotate current atom by given x/y/z angles about given center'''
-        q0 = (np.cos(angle_x/2.0)*np.cos(angle_y/2)*np.cos(angle_z/2)) + (np.sin(angle_x/2.0)*np.sin(angle_y/2)*np.sin(angle_z/2))
-        q1 = (np.sin(angle_x/2.0)*np.cos(angle_y/2)*np.cos(angle_z/2)) - (np.cos(angle_x/2.0)*np.sin(angle_y/2)*np.sin(angle_z/2))
-        q2 = (np.cos(angle_x/2.0)*np.sin(angle_y/2)*np.cos(angle_z/2)) + (np.sin(angle_x/2.0)*np.cos(angle_y/2)*np.sin(angle_z/2))
-        q3 = (np.cos(angle_x/2.0)*np.cos(angle_y/2)*np.sin(angle_z/2)) - (np.sin(angle_x/2.0)*np.sin(angle_y/2)*np.cos(angle_z/2))
-        rotation_quaternion = np.array([q0,q1,q2,q3])
+        q_0 = (np.cos(angle_x/2.0)*np.cos(angle_y/2)*np.cos(angle_z/2)) + (np.sin(angle_x/2.0)*np.sin(angle_y/2)*np.sin(angle_z/2))
+        q_1 = (np.sin(angle_x/2.0)*np.cos(angle_y/2)*np.cos(angle_z/2)) - (np.cos(angle_x/2.0)*np.sin(angle_y/2)*np.sin(angle_z/2))
+        q_2 = (np.cos(angle_x/2.0)*np.sin(angle_y/2)*np.cos(angle_z/2)) + (np.sin(angle_x/2.0)*np.cos(angle_y/2)*np.sin(angle_z/2))
+        q_3 = (np.cos(angle_x/2.0)*np.cos(angle_y/2)*np.sin(angle_z/2)) - (np.sin(angle_x/2.0)*np.sin(angle_y/2)*np.cos(angle_z/2))
+        rotation_quaternion = np.array([q_0,q_1,q_2,q_3])
         rotation_quaternion_inverse = q_inv(rotation_quaternion)
 
         # Active rotation: p' = q^-1 p q
