@@ -4,7 +4,7 @@ import numpy as np
 import xml.etree.cElementTree as ET
 import glob
 import os
-from utils import *
+from .utils import *
 
 __version__ = '0.9.2' # Update setup.py if the version changes
 
