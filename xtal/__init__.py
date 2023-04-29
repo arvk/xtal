@@ -842,6 +842,54 @@ class Snapshot(AtTraj):
 
 
 
+
+    def make_bonds(self, cutoff, element_1 = None, element_2 = None, min_cutoff = 0.0):
+        numatoms = len(self.atomlist)
+        bondlist = [[] for i in range(numatoms)]
+        whichbox = [[] for i in range(numatoms)]
+
+        boxsize = cutoff
+        xmin = np.min(self.trajectory.box[:,0])
+        xmax = np.max(self.trajectory.box[:,0])
+        ymin = np.min(self.trajectory.box[:,1])
+        ymax = np.max(self.trajectory.box[:,1])
+        zmin = np.min(self.trajectory.box[:,2])
+        zmax = np.max(self.trajectory.box[:,2])
+        box_x = np.arange(xmin,xmax,cutoff)
+        box_y = np.arange(ymin,ymax,cutoff)
+        box_z = np.arange(zmin,zmax,cutoff)
+
+        neighbox = [[[[] for z in box_z] for y in box_y] for x in box_x]
+
+        for atomID, atom in enumerate(self.atomlist):
+            box_x_index,box_y_index,box_z_index = np.floor((atom.cart - np.array([xmin,ymin,zmin]))/boxsize).astype(int)
+            neighbox[box_x_index][box_y_index][box_z_index].append(atomID)
+            whichbox[atomID] = [box_x_index,box_y_index,box_z_index]
+
+        for atomID, atom in enumerate(self.atomlist):
+            box_x_index,box_y_index,box_z_index = whichbox[atomID]
+            for x_iter in np.arange(box_x_index-1,box_x_index+2):
+                for y_iter in np.arange(box_y_index-1,box_y_index+2):
+                    for z_iter in np.arange(box_z_index-1,box_z_index+2):
+                        x2 = np.mod(x_iter, len(box_x))
+                        y2 = np.mod(y_iter, len(box_y))
+                        z2 = np.mod(z_iter, len(box_z))
+                        for neigh_ID in neighbox[x2][y2][z2]:
+                            if neigh_ID != atomID:
+                                neighbor_atom = self.atomlist[neigh_ID]
+
+                                # Make sure bonds are formed between the given elements
+                                condition_1 = (atom.element == element_1 or not element_1) and (neighbor_atom.element == element_2 or not element_2)
+                                condition_2 = (atom.element == element_2 or not element_2) and (neighbor_atom.element == element_1 or not element_1)
+                                if (condition_1 or condition_2):
+                                    bond_length = self.pbc_distance(atom,neighbor_atom)
+                                    if (bond_length < cutoff) and (bond_length > min_cutoff):
+                                        bondlist[atomID].append(neigh_ID)
+
+
+        return bondlist
+
+
 #--------------------------------------------------
 
 class Atom(Snapshot):
