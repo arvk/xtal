@@ -838,7 +838,7 @@ class Snapshot(AtTraj):
 
 
 
-    def remove_overlap(self, cutoff, same_element = False):
+    def remove_duplicates(self, cutoff, same_element = False):
         '''Remove one of a pair of atoms that are within <cutoff> distance of each other
         <cutoff> is given in Angstroms'''
 
