@@ -751,60 +751,6 @@ class Snapshot(AtTraj):
 
 
 
-    def remove_overlap(self, cutoff):
-        '''Remove one of a pair of atoms that are within <cutoff> distance of each other
-        <cutoff> is given in Angstroms
-
-        Atomlist is sorted according to x- y- and z- positions
-        Loop through the atomlist to find out if atom i and i+1 are within cutoff.
-        If yes, remove atom i from the atomlist
-        Loop until you don't find any neighbors within the cutoff'''
-
-        num_of_initial_atoms = len(self.atomlist)
-        num_of_removed_atoms = 0
-
-        found_duplicate_atom = True
-
-        while found_duplicate_atom:
-            found_duplicate_atom = False
-
-            self.atomlist.sort(key=lambda x: int(x.cart[0]))
-            self.atomlist.sort(key=lambda x: int(x.cart[1]))
-            self.atomlist.sort(key=lambda x: int(x.cart[2]))
-            for index, atom in enumerate(self.atomlist): # pylint: disable=unused-variable
-                if index < len(self.atomlist)-1: # Don't want last item, must compare index, index+1
-                    if self.pbc_distance(self.atomlist[index], self.atomlist[index+1]) < cutoff:
-                        del self.atomlist[index]
-                        num_of_removed_atoms += 1
-                        found_duplicate_atom = True
-
-            self.atomlist.sort(key=lambda x: int(x.cart[1]))
-            self.atomlist.sort(key=lambda x: int(x.cart[2]))
-            self.atomlist.sort(key=lambda x: int(x.cart[0]))
-            for index, atom in enumerate(self.atomlist):
-                if index < len(self.atomlist)-1: # Don't want last item, must compare index, index+1
-                    if self.pbc_distance(self.atomlist[index], self.atomlist[index+1]) < cutoff:
-                        del self.atomlist[index]
-                        num_of_removed_atoms += 1
-                        found_duplicate_atom = True
-
-            self.atomlist.sort(key=lambda x: int(x.cart[2]))
-            self.atomlist.sort(key=lambda x: int(x.cart[0]))
-            self.atomlist.sort(key=lambda x: int(x.cart[1]))
-            for index, atom in enumerate(self.atomlist):
-                if index < len(self.atomlist)-1: # Don't want last item, must compare index, index+1
-                    if self.pbc_distance(self.atomlist[index], self.atomlist[index+1]) < cutoff:
-                        del self.atomlist[index]
-                        num_of_removed_atoms += 1
-                        found_duplicate_atom = True
-
-        if not found_duplicate_atom:
-            print('No duplicate atoms found.')
-        else:
-            print(num_of_removed_atoms, 'atoms removed. Atomlist size reduced from', \
-                  num_of_initial_atoms, 'to', len(self.atomlist))
-
-
     def pbc_distance(self, atom1, atom2):
         '''Calculate minimum distance between two atoms assuming PBC'''
         atom1.fract = atom1.fract - np.floor(atom2.fract)
@@ -883,11 +829,40 @@ class Snapshot(AtTraj):
                                 condition_2 = (atom.element == element_2 or not element_2) and (neighbor_atom.element == element_1 or not element_1)
                                 if (condition_1 or condition_2):
                                     bond_length = self.pbc_distance(atom,neighbor_atom)
-                                    if (bond_length < cutoff) and (bond_length > min_cutoff):
+                                    if (bond_length <= cutoff) and (bond_length >= min_cutoff):
                                         bondlist[atomID].append(neigh_ID)
 
 
         return bondlist
+
+
+
+
+    def remove_overlap(self, cutoff, same_element = False):
+        '''Remove one of a pair of atoms that are within <cutoff> distance of each other
+        <cutoff> is given in Angstroms'''
+
+        bondlist = self.make_bonds(cutoff)
+        atoms_to_remove = []
+        num_of_removed_atoms = 0
+        for atom_ID, bond in enumerate(bondlist):
+            for second_atom_ID in bond:
+                if second_atom_ID > atom_ID:
+                    if (not same_element) or (self.atomlist[atom_ID].element == self.atomlist[second_atom_ID]):
+                        atoms_to_remove.append(second_atom_ID)
+
+        atoms_to_remove = list(set(atoms_to_remove))
+        num_of_removed_atoms = len(atoms_to_remove)
+
+        if num_of_removed_atoms > 0:
+            atoms_to_remove.sort(reverse=True)
+            for atom_ID in atoms_to_remove:
+                del self.atomlist[atom_ID]
+            print(num_of_removed_atoms, " atoms removed")
+            print("Atoms removed: ", atoms_to_remove)
+        else:
+            print("No duplicate atoms found")
+
 
 
 #--------------------------------------------------
