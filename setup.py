@@ -8,5 +8,5 @@ setup(name='xtal',
       license="MIT",
       url='https://github.com/USCCACS/xtal',
       packages=['xtal'],
-      install_requires=['numpy >= 1.15.0']
+      install_requires=['numpy >= 1.15.0','scipy >= 1.10.1']
      )

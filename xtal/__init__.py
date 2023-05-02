@@ -1,6 +1,7 @@
 '''xtal is an umbrella package for various tools used to manipulate atomic trajectories'''
 import copy
 import numpy as np
+import scipy
 import xml.etree.cElementTree as ET
 import glob
 import os
@@ -863,6 +864,26 @@ class Snapshot(AtTraj):
         else:
             print("No duplicate atoms found")
 
+
+
+    def make_clusters(self, cutoff = None, bond_list = None):
+        '''Generate a list of clusters based on a provided bond list
+        or all bonds within a given <cutoff>'''
+
+        if not bond_list:
+            bond_list = self.make_bonds(cutoff = cutoff)
+
+        num_atoms = len(self.atomlist)
+        connectivity_matrix = np.zeros((num_atoms,num_atoms),dtype=bool)
+
+
+        for atomID, bonds in enumerate(bond_list):
+            for secondatomID in bonds:
+                connectivity_matrix[atomID][secondatomID] = True
+
+        num_clusters, clusters = scipy.sparse.csgraph.connected_components(connectivity_matrix,directed=False,return_labels=True)
+
+        return [num_clusters, clusters]
 
 
 #--------------------------------------------------
