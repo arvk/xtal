@@ -77,6 +77,13 @@ class AtTraj(object):
         for snapshot in self.snaplist:
             snapshot.rotate_axis_angle(center, axis, angle)
 
+    def get_density(self):
+        '''Calculate the mass density of atoms in the trajectory'''
+        densities = []
+        for snapshot in self.snaplist:
+            densities.append(snapshot.get_density())
+        return densities
+
     def make_periodic(self, num_of_images):
         '''Create periodic images all snapshots of current simulation cell'''
         for snapshot in self.snaplist:
