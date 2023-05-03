@@ -66,11 +66,15 @@ class AtTraj(object):
         for snapshot in self.snaplist:
             snapshot.inbox()
 
-    def rotate(self, center, angle):
+    def rotate_euler(self, center, angle_z, angle_y, angle_x):
         '''Rotate all atoms in the trajectory by given angle about given center'''
         for snapshot in self.snaplist:
-            snapshot.rotate(center, angle)
+            snapshot.rotate_euler(center, angle_z, angle_y, angle_x)
 
+    def rotate_axis_angle(self, center, axis, angle):
+        '''Rotate all atoms in the trajectory by given angle about given center and axis'''
+        for snapshot in self.snaplist:
+            snapshot.rotate_axis_angle(center, axis, angle)
 
     def make_periodic(self, num_of_images):
         '''Create periodic images all snapshots of current simulation cell'''
@@ -635,15 +639,10 @@ class Snapshot(AtTraj):
         for atom in self.atomlist:
             atom.cartodir()
 
-    def rotate(self, center, angle):
-        '''Rotate all atoms in the snapshot by given angle about given center'''
-        for atom in self.atomlist:
-            atom.rotate(center, angle)
-
-    def rotate3D(self, center, angle_z, angle_y, angle_x):
+    def rotate_euler(self, center, angle_z, angle_y, angle_x):
         '''Rotate all atoms in the snapshot by given euler angles about given center'''
         for atom in self.atomlist:
-            atom.rotate3D(center, angle_z, angle_y, angle_x)
+            atom.rotate_euler(center, angle_z, angle_y, angle_x)
 
     def rotate_axis_angle(self, center, axis, angle):
         '''Rotate all atoms in the snapshot by given angle about given center and axis'''
@@ -935,17 +934,7 @@ class Atom(Snapshot):
         if self.element == old_id:
             self.element = new_id
 
-    def rotate(self, center, angle):
-        '''Rotate current atom by given angle about given center'''
-        initpos = self.cart[[0, 1]]
-        recenter = initpos - center
-        rotmat = np.array([[np.cos(angle), 0.0-np.sin(angle)], [np.sin(angle), np.cos(angle)]])
-        rotated = rotmat.dot(recenter)
-        finalpos = rotated + center
-        self.cart[0] = finalpos[0]
-        self.cart[1] = finalpos[1]
-
-    def rotate3D(self, center, angle_z, angle_y, angle_x):
+    def rotate_euler(self, center, angle_z, angle_y, angle_x):
         '''Rotate current atom by given x/y/z angles about given center'''
         q_0 = (np.cos(angle_x/2.0)*np.cos(angle_y/2)*np.cos(angle_z/2)) + (np.sin(angle_x/2.0)*np.sin(angle_y/2)*np.sin(angle_z/2))
         q_1 = (np.sin(angle_x/2.0)*np.cos(angle_y/2)*np.cos(angle_z/2)) - (np.cos(angle_x/2.0)*np.sin(angle_y/2)*np.sin(angle_z/2))
