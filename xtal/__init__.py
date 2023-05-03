@@ -5,6 +5,7 @@ import scipy
 import xml.etree.cElementTree as ET
 import glob
 import os
+import periodictable
 from .utils import *
 
 __version__ = '0.9.2' # Update setup.py if the version changes
@@ -884,6 +885,16 @@ class Snapshot(AtTraj):
 
         return [num_clusters, clusters]
 
+    def get_density(self):
+        '''Calculate the mass density of atoms in a given snapshot'''
+        volume = np.inner(self.trajectory.box[0, :], np.cross(self.trajectory.box[1, :], self.trajectory.box[2, :]))
+        masses = []
+        for atomID, atom in enumerate(self.atomlist):
+            mass = periodictable.elements.symbol(atom.element).mass
+            masses.append(mass)
+        mass = np.sum(masses)
+        density = (mass / volume) * (1.6605390666) # in g/cc
+        return density
 
 #--------------------------------------------------
 
