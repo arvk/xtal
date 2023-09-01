@@ -802,7 +802,7 @@ class Snapshot(AtTraj):
         bondlist = [[] for i in range(numatoms)]
         whichbox = [[] for i in range(numatoms)]
 
-        boxsize = cutoff
+        boxsize = cutoff * 2.0
         xmin = np.min(self.trajectory.box[:,0])
         xmax = np.max(self.trajectory.box[:,0])
         ymin = np.min(self.trajectory.box[:,1])
