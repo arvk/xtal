@@ -8,5 +8,5 @@ setup(name='xtal',
       license="MIT",
       url='https://github.com/USCCACS/xtal',
       packages=['xtal'],
-      install_requires=['numpy >= 1.15.0']
+      install_requires=['numpy >= 1.15.0', 'beautifulsoup4 >= 4.14.2']
      )

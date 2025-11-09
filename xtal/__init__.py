@@ -1,9 +1,9 @@
 '''xtal is an umbrella package for various tools used to manipulate atomic trajectories'''
 import copy
 import numpy as np
-import xml.etree.cElementTree as ET
 import glob
 import os
+from bs4 import BeautifulSoup
 
 __version__ = '0.9.2' # Update setup.py if the version changes
 
@@ -149,45 +149,69 @@ class AtTraj(object):
     def read_trajectory_vasp_xml(self, filename):
         '''Read new VASP trajectory from XML file'''
 
-        vasp_trajfile = ET.parse(filename)
-        root = vasp_trajfile.getroot()
+        vasp_trajfile = open(filename,'r')
+        root = BeautifulSoup(vasp_trajfile, 'xml')
 
         elements = []
         # Get atomic structure
-        for tag in root.find('atominfo').find('array').find('set').findall('rc'):
+        for tag in root.find('atominfo').find('array').find('set').find_all('rc'):
             elements.append(tag.find('c').text.strip().upper())
 
         # Read structure
-        for tag in root.findall('calculation'):
+        for tag in root.find_all('calculation'):
             snapshot = self.create_snapshot(Snapshot)
 
-            # Read positions
-            subtag = tag.findall('structure')[-1]
-            for posarray in subtag.findall('varray'):
-                if posarray.attrib['name']=='positions':
-                    for atomID, atompos in enumerate(posarray.findall('v')):
-                        atom = snapshot.create_atom(Atom)
-                        atom.fract = np.array(list(map(float, atompos.text.strip().split())))
-                        atom.element = elements[atomID]
+            try:
+                # Read positions
+                subtag = tag.find_all('structure')[-1]
+                for posarray in subtag.find_all('varray'):
+                    if posarray['name']=='positions':
+                        for atomID, atompos in enumerate(posarray.find_all('v')):
+                            atom = snapshot.create_atom(Atom)
+                            atom.fract = np.array(list(map(float, atompos.text.strip().split())))
+                            atom.element = elements[atomID]
 
-            # Read forces
-            for subtag in tag.findall('varray'):
-                if subtag.attrib['name']=='forces':
-                    for atomID, atomforce in enumerate(subtag.findall('v')):
-                        snapshot.atomlist[atomID].force = np.array(list(map(float, atomforce.text.strip().split())))
+                # Read forces
+                for subtag in tag.find_all('varray'):
+                    if subtag['name']=='forces':
+                        for atomID, atomforce in enumerate(subtag.find_all('v')):
+                            snapshot.atomlist[atomID].force = np.array(list(map(float, atomforce.text.strip().split())))
 
-            # Read box
-            for subtag in tag.findall('structure')[-1].find('crystal').findall('varray'):
-                if subtag.attrib['name']=='basis':
-                    for index, boxline in enumerate(subtag.findall('v')):
-                        self.box[index, :] = list(map(float, boxline.text.strip().split()))
-                    self.box = np.array(self.box)
+                # Read stresses
+                stress = []
+                for subtag in tag.find_all('varray'):
+                    if subtag['name']=='stress':
+                        for stress_one_axis_string in subtag.find_all('v'):
+                            stress_one_axis = np.array(list(map(float, stress_one_axis_string.text.strip().split())))
+                            stress.append(stress_one_axis)
+                        # Convert from kBar to GPa
+                        snapshot.stress = np.array(stress) / 10.0
 
-            # Read energy
-            subtag = tag.findall('scstep')[-1].find('energy')
-            for info in subtag.findall('i'):
-                if info.attrib['name']=='e_0_energy':
-                    snapshot.energy = float(info.text)
+                        # Read pressure (if stresses are found)
+                        snapshot.pressure = np.trace(snapshot.stress)/3.0
+
+
+                # Read box
+                for subtag in tag.find_all('structure')[-1].find('crystal').find_all('varray'):
+                    if subtag['name']=='basis':
+                        for index, boxline in enumerate(subtag.find_all('v')):
+                            self.box[index, :] = list(map(float, boxline.text.strip().split()))
+                        self.box = np.array(self.box)
+
+                # Read energy
+                subtag = tag.find_all('scstep')[-1].find('energy')
+                for info in subtag.find_all('i'):
+                    if info['name']=='e_0_energy':
+                        snapshot.energy = float(info.text)
+                    elif info['name']=='e_fr_energy':
+                        snapshot.free_energy = float(info.text)
+
+            except:
+                # Delete the last snapshot if error is incountered during reading
+                self.snaplist = self.snaplist[:-1]
+
+        # Close the file handle for the xml file
+        vasp_trajfile.close()
 
 
 
@@ -611,6 +635,8 @@ class Snapshot(AtTraj):
         self.description = ''
         self.timestep = None
         self.energy = None
+        self.free_energy = None
+        self.stress = None
         self.pressure = None
         self.temperature = None
 
